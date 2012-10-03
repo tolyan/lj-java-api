@@ -36,7 +36,7 @@ package ru.anglerhood.lj.api.xmlrpc.arguments;
  */
 public class GetCommentsArgument extends BaseArgument {
 
-    public void setDItemId(String id) {
+    public void setDItemId(Integer id) {
         struct.put("ditemid", id);
     }
 
@@ -51,6 +51,11 @@ public class GetCommentsArgument extends BaseArgument {
     public void setPageSize(String pageSize) {
         struct.put("page_size", pageSize);
     }
+
+    public void setJournal(String journal) {
+        struct.put("journal", journal);
+    }
+
 
     /*
         Possible values thread, list

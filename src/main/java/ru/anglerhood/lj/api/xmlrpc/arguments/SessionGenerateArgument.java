@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Igor Katkov
+ * Copyright (c) 2006, 2012 Igor Katkov, Anatoly Rybalchenko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided 
@@ -50,7 +50,7 @@ public class SessionGenerateArgument extends BaseArgument {
     }
 
 
-    static class ExpirationType {
+    public static class ExpirationType {
 
         public final static ExpirationType SHORT = new ExpirationType("short");
         public final static ExpirationType LONG = new ExpirationType("long");

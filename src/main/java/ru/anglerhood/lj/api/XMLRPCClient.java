@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Igor Katkov
+ * Copyright (c) 2006, 2012 Igor Katkov, Anatoly Rybalchenko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided 
@@ -250,5 +250,15 @@ public interface XMLRPCClient {
      * @throws LJRuntimeException in case something went wrong, like network was down or any kind of server side problems
      */
     public SyncResult syncitems(SyncItemsArgument argument, int timeout);
+
+
+    /**
+     * Return array of comments for specified blog entry
+     * @param argument GetCommentsArgument
+     * @param timeout timeout in millisecs, a value of zero  means the timeout is not used.
+     * @return Comment []
+     * @throws LJRuntimeException in case something went wrong, like network was down or any kind of server side problems
+     */
+    public Comment [] getcomments(GetCommentsArgument argument, int timeout);
 }
 

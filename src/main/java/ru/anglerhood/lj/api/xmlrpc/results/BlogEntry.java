@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Igor Katkov
+ * Copyright (c) 2006, 2012 Igor Katkov, Anatoly Rybalchenko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided 
@@ -151,6 +151,14 @@ public class BlogEntry {
      */
     public String getPoster() {
         return poster;
+    }
+
+    /**
+     * Some kind of if id, required for getcomments
+     * @return ditemid
+     */
+    public Integer getDItemId() {
+        return itemid * 256 + anum;
     }
 
     public String toString() {

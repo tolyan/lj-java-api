@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Igor Katkov
+ * Copyright (c) 2006,2012 Igor Katkov, Anatoly Rybalchenko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided 
@@ -123,6 +123,12 @@ public class BaseArgument implements Map {
         }
         return buffer.toString();
     }
+
+    public void setCreds(String user, String passwd) {
+        setUsername(user);
+        setHpassword(passwd);
+    }
+
 
     //------------------------------------------------------------------
     //         delegation

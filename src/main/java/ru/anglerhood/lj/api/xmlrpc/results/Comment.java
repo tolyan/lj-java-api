@@ -19,33 +19,33 @@ import java.util.Map;
 public class Comment {
     public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("yyyy'-'MM'-'dd' 'HH:mm:ss");
     private Integer pages;
-    private Long datePostUnix;
-    private Boolean isLoaded;
-    private Boolean isShow;
+    private Integer datePostUnix;
+    private Integer isLoaded;
+    private Integer isShow;
     private Date datePost;
     private String postername;
-    private Long dtalkid;
+    private Integer dtalkid;
     private Integer level;
     private String subject;
     private String body;
     private String state;
-    private Long posterid;
+    private Integer posterid;
     private List<Comment> children;
 
 
     public Comment(Map map) throws ParseException, UnsupportedEncodingException {
         pages = (Integer) map.get("pages");
-        datePostUnix = (Long) map.get("datepostunix");
-        isLoaded = (Boolean) map.get("is_loaded");
-        isShow = (Boolean) map.get("is_show");
+        datePostUnix = (Integer) map.get("datepostunix");
+        isLoaded = (Integer) map.get("is_loaded");
+        isShow = (Integer) map.get("is_show");
         datePost = LJHelpers.parseDate((String) map.get("datepost"), DATEFORMAT);
         postername = (String) map.get("postername");
-        dtalkid = (Long) map.get("dtalkid");
+        dtalkid = (Integer) map.get("dtalkid");
         level = (Integer) map.get("level");
         subject = LJHelpers.getUnicodeText(map.get("subject"));
         body = LJHelpers.getUnicodeText(map.get("body"));
         state = (String) map.get("state");
-        posterid = (Long) map.get("posterid");
+        posterid = (Integer) map.get("posterid" );
         //TODO implement child comments unmarshalling
     }
 
@@ -53,15 +53,15 @@ public class Comment {
         return pages;
     }
 
-    public Long getDatePostUnix() {
+    public Integer getDatePostUnix() {
         return datePostUnix;
     }
 
-    public Boolean getLoaded() {
+    public Integer getLoaded() {
         return isLoaded;
     }
 
-    public Boolean getShow() {
+    public Integer getShow() {
         return isShow;
     }
 
@@ -73,7 +73,7 @@ public class Comment {
         return postername;
     }
 
-    public Long getDtalkid() {
+    public Integer getDtalkid() {
         return dtalkid;
     }
 
@@ -93,7 +93,7 @@ public class Comment {
         return state;
     }
 
-    public Long getPosterid() {
+    public Integer getPosterid() {
         return posterid;
     }
 
@@ -101,6 +101,23 @@ public class Comment {
         return children;
     }
 
+
+    public String toString() {
+        //TODO fix NPE
+        return "Comment: { " +
+                    "pages =>" + pages.toString() +
+                    ", datepostunix =>" + datePost.toString() +
+                    ", is_loaded =>"    + isLoaded.toString() +
+                    ", is_show =>"      + isShow.toString() +
+                    ", datepost =>"     + datePost.toString() +
+                    ", postername =>"   + postername.toString() +
+                    ", dtalkid =>"      + dtalkid.toString() +
+                    ", level =>"        + level.toString() +
+                    ", subject =>"      + subject.toString() +
+                    ", body =>"         + body.toString() +
+                    ", state =>"        + state.toString() +
+                    ", posterid =>"     + posterid.toString() + "}";
+    }
 
 
 

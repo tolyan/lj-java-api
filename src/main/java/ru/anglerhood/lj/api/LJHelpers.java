@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -116,7 +117,7 @@ public class LJHelpers {
         if (text == null) {
             return null;
         } else if (text instanceof byte[]) {
-            return new String((byte[]) text, "UTF-8");
+            return new String((byte[]) text, Charset.forName("UTF-8"));
         } else {
             return String.valueOf(text);
         }
