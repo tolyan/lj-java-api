@@ -1,16 +1,16 @@
 package ru.anglerhood.lj.client;
 
 import org.apache.log4j.BasicConfigurator;
+import ru.anglerhood.lj.api.XMLRPCClient;
+import ru.anglerhood.lj.api.XMLRPCClientImpl;
+import ru.anglerhood.lj.api.xmlrpc.arguments.LoginArgument;
+import ru.anglerhood.lj.api.xmlrpc.results.UserData;
 
-/**
- * Created with IntelliJ IDEA.
- * User: engage
- * Date: 10/3/12
- * Time: 3:50 PM
- * To change this template use File | Settings | File Templates.
- */
 public class EntryPoint {
     public static void main(String[] args) {
         BasicConfigurator.configure();
+        LoginArgument arg = new LoginArgument();
+        Downloader down = new Downloader();
+        down.login();
     }
 }
