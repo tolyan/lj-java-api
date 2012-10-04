@@ -1,11 +1,13 @@
 package ru.anglerhood.lj.api.xmlrpc.results;
 
 import ru.anglerhood.lj.api.LJHelpers;
+import ru.anglerhood.lj.client.Util;
 
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +32,7 @@ public class Comment {
     private String body;
     private String state;
     private Integer posterid;
-    private List<Comment> children;
+    private List <Comment> children;
 
 
     public Comment(Map map) throws ParseException, UnsupportedEncodingException {
@@ -46,7 +48,20 @@ public class Comment {
         body = LJHelpers.getUnicodeText(map.get("body"));
         state = (String) map.get("state");
         posterid = (Integer) map.get("posterid" );
+        children = addChildren(map);
         //TODO implement child comments unmarshalling
+    }
+
+    private List<Comment> addChildren(Map map) throws ParseException, UnsupportedEncodingException {
+        List<Comment> result = new LinkedList<Comment>();
+        Object [] rawChildren = (Object [])map.get("children");
+        if(null != rawChildren) {
+            for (Object childMap : rawChildren ) {
+                Comment child = new Comment((Map) childMap);
+                result.add(child);
+            }
+        }
+        return result;
     }
 
     public Integer getPages() {
@@ -103,21 +118,23 @@ public class Comment {
 
 
     public String toString() {
-        //TODO fix NPE
         return "Comment: { " +
-                    "pages =>" + pages.toString() +
-                    ", datepostunix =>" + datePost.toString() +
-                    ", is_loaded =>"    + isLoaded.toString() +
-                    ", is_show =>"      + isShow.toString() +
-                    ", datepost =>"     + datePost.toString() +
-                    ", postername =>"   + postername.toString() +
-                    ", dtalkid =>"      + dtalkid.toString() +
-                    ", level =>"        + level.toString() +
-                    ", subject =>"      + subject.toString() +
-                    ", body =>"         + body.toString() +
-                    ", state =>"        + state.toString() +
-                    ", posterid =>"     + posterid.toString() + "}";
+                    "pages =>"          + Util.nullString(pages) +
+                    ", datepostunix =>" + Util.nullString(datePost) +
+                    ", is_loaded =>"    + Util.nullString(isLoaded) +
+                    ", is_show =>"      + Util.nullString(isShow) +
+                    ", datepost =>"     + Util.nullString(datePost) +
+                    ", postername =>"   + Util.nullString(postername) +
+                    ", dtalkid =>"      + Util.nullString(dtalkid.toString()) +
+                    ", level =>"        + Util.nullString(level.toString()) +
+                    ", subject =>"      + Util.nullString(subject) +
+                    ", body =>"         + Util.nullString(body) +
+                    ", state =>"        + Util.nullString(state) +
+                    ", posterid =>"     + Util.nullString(posterid) + "}";
     }
+
+
+
 
 
 
