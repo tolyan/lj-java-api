@@ -1,3 +1,31 @@
+/*
+ * Copyright (c) 2012, Anatoly Rybalchenko
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided
+ * that the following conditions are met:
+ *
+ *     * Redistributions of source code must retain the above copyright notice, this list of conditions
+ *       and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+ *       and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *     * The name of the author may not be used may not be used to endorse or
+ *       promote products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
 package ru.anglerhood.lj.client;
 
 import org.apache.commons.logging.Log;
@@ -11,16 +39,14 @@ import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 
 import java.util.List;
 
+
 /**
- * Created with IntelliJ IDEA.
- * User: anglerhood
- * Date: 10/4/12
- * Time: 11:03 PM
- * To change this template use File | Settings | File Templates.
+ * Convenient client to use LJ API
  */
+
 public class Client {
     private final XMLRPCClient client = new XMLRPCClientImpl();
-    private Log logger = LogFactory.getLog(Downloader.class);
+    private Log logger = LogFactory.getLog(Client.class);
     private static final int TIMEOUT = 0;
 
     private String user;
@@ -35,6 +61,11 @@ public class Client {
         if (passwd == null || passwd.isEmpty()) logger.debug("LJ_PASSWD is not set");
     }
 
+    /**
+     * Gets blog entry with specified id
+     * @param entryId id of BlogEntry
+     * @return BlogEntry
+     */
     public BlogEntry getBlogEntry(int entryId) {
         GetEventsArgument arg = new GetEventsArgument();
         arg.setCreds(user, passwd);
@@ -48,6 +79,13 @@ public class Client {
 
     }
 
+    /**
+     * Gets comments collection for specified blog entry
+     * @param entryId id of BlogEntry
+     * @param anum property of BlogEntry
+     * @return List of Comments
+     */
+
     public List<Comment> getComments(int entryId, int anum) {
         GetCommentsArgument arg = new GetCommentsArgument();
         arg.setCreds(user, passwd);
@@ -57,4 +95,15 @@ public class Client {
         arg.setJournal(user);
         return client.getcomments(arg, TIMEOUT);
     }
+
+    /**
+     * Gets comments collection for specified blog entry
+     * @param entry  BlogEntry
+     * @return List of Comments
+     */
+    public List<Comment> getComments(BlogEntry entry) {
+        return getComments(entry.getItemid(), entry.getAnum());
+    }
+
+
 }
