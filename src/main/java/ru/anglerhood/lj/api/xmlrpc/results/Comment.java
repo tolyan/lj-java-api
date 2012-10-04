@@ -24,7 +24,6 @@ public class Comment {
     private Integer datePostUnix;
     private Integer isLoaded;
     private Integer isShow;
-    private Date datePost;
     private String postername;
     private Integer dtalkid;
     private Integer level;
@@ -40,7 +39,6 @@ public class Comment {
         datePostUnix = (Integer) map.get("datepostunix");
         isLoaded = (Integer) map.get("is_loaded");
         isShow = (Integer) map.get("is_show");
-        datePost = LJHelpers.parseDate((String) map.get("datepost"), DATEFORMAT);
         postername = (String) map.get("postername");
         dtalkid = (Integer) map.get("dtalkid");
         level = (Integer) map.get("level");
@@ -80,10 +78,6 @@ public class Comment {
         return isShow;
     }
 
-    public Date getDatePost() {
-        return datePost;
-    }
-
     public String getPostername() {
         return postername;
     }
@@ -120,10 +114,9 @@ public class Comment {
     public String toString() {
         return "Comment: { " +
                     "pages =>"          + Util.nullString(pages) +
-                    ", datepostunix =>" + Util.nullString(datePost) +
+                    ", datepostunix =>" + Util.nullString(datePostUnix) +
                     ", is_loaded =>"    + Util.nullString(isLoaded) +
                     ", is_show =>"      + Util.nullString(isShow) +
-                    ", datepost =>"     + Util.nullString(datePost) +
                     ", postername =>"   + Util.nullString(postername) +
                     ", dtalkid =>"      + Util.nullString(dtalkid.toString()) +
                     ", level =>"        + Util.nullString(level.toString()) +

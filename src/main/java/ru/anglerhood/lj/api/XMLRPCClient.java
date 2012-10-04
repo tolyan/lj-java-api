@@ -30,6 +30,8 @@ package ru.anglerhood.lj.api;
 import ru.anglerhood.lj.api.xmlrpc.arguments.*;
 import ru.anglerhood.lj.api.xmlrpc.results.*;
 
+import java.util.List;
+
 /**
  * This the XML-RPC version of the Client/Server protocol.
  * XML-RPC allows programs to make procedure calls over the internet, regardless of differing operating systems and
@@ -259,6 +261,6 @@ public interface XMLRPCClient {
      * @return Comment []
      * @throws LJRuntimeException in case something went wrong, like network was down or any kind of server side problems
      */
-    public Comment [] getcomments(GetCommentsArgument argument, int timeout);
+    public List<Comment> getcomments(GetCommentsArgument argument, int timeout);
 }
 

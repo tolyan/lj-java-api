@@ -158,7 +158,12 @@ public class BlogEntry {
      * @return ditemid
      */
     public Integer getDItemId() {
-        return itemid * 256 + anum;
+        return BlogEntry.getDItemId(this.itemid, this.anum);
+    }
+
+
+    public static Integer getDItemId(int entryId, int anum) {
+        return entryId * 256 + anum;
     }
 
     public String toString() {
@@ -174,5 +179,6 @@ public class BlogEntry {
                 ", poster='" + poster + '\'' +
                 '}';
     }
+
 
 }

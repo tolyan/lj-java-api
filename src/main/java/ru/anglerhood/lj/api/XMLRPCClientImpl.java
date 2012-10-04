@@ -38,6 +38,7 @@ import ru.anglerhood.lj.api.xmlrpc.results.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -91,10 +92,10 @@ public class XMLRPCClientImpl implements XMLRPCClient {
         }
     }
 
-    public Comment[] getcomments(GetCommentsArgument argument, int timeout) throws LJRuntimeException {
+    public List<Comment> getcomments(GetCommentsArgument argument, int timeout) throws LJRuntimeException {
         logger.debug("Entering getcomments(" + argument + ", " + timeout + ")");
         argument.stripNullValues();
-        List<Comment> result = new ArrayList<Comment>();
+        List<Comment> result = new LinkedList<Comment>();
         try {
             Map commentsMap;
             commentsMap = (Map) doXmlRpcCall("LJ.XMLRPC.getcomments", new Object[]{argument}, timeout);
@@ -106,7 +107,7 @@ public class XMLRPCClientImpl implements XMLRPCClient {
                 result.add(comment);
             }
             logger.debug("Exiting getcomments");
-            return result.toArray(new Comment[result.size()]);
+            return result;
         } catch (TimeoutException e) {
             throw  new LJTimeoutException(e);
         } catch (Throwable e) {
