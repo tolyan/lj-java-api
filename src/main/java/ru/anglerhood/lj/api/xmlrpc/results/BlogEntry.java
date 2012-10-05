@@ -47,9 +47,9 @@ public class BlogEntry {
     private String body;
     private Date date;
     private String subject;
-    private SecurityType security;
-    private Integer allowmask;
-    private String poster;
+//    private SecurityType security;
+//    private Integer allowmask;
+//    private String poster;
 
     //TODO: implement support for: props (metadata)
 
@@ -61,9 +61,9 @@ public class BlogEntry {
         subject = LJHelpers.getUnicodeText(map.get("subject"));
         body = LJHelpers.getUnicodeText(map.get("event"));
         date = LJHelpers.parseDate((String) map.get("eventtime"), DATEFORMAT);
-        security = SecurityType.getInstance((String) map.get("security"));
-        allowmask = (Integer) map.get("allowmask");
-        poster = (String) map.get("poster");
+//        security = SecurityType.getInstance((String) map.get("security"));
+//        allowmask = (Integer) map.get("allowmask");
+//        poster = (String) map.get("poster");
     }
 
     /**
@@ -121,37 +121,37 @@ public class BlogEntry {
     public String getSubject() {
         return subject;
     }
+//
+//
+//    /**
+//     * If this variable is null, then the security of the post is public, otherwise this value will be private or usemask.
+//     *
+//     * @return security
+//     */
+//    public SecurityType getSecurity() {
+//        return security;
+//    }
 
-
-    /**
-     * If this variable is null, then the security of the post is public, otherwise this value will be private or usemask.
-     *
-     * @return security
-     */
-    public SecurityType getSecurity() {
-        return security;
-    }
-
-
-    /**
-     * If security is usemask then this is defined with the 32-bit unsigned int bit-mask of who is allowed to access this post.
-     *
-     * @return mask
-     */
-    public Integer getAllowmask() {
-        return allowmask;
-    }
-
-    /**
-     * If the poster of this event is different from the user value sent above, then this will be not null and will
-     * specify the username of the poster of this event. If this key is not present, then it is safe to assume that
-     * the poster of this event is none other than user.
-     *
-     * @return name
-     */
-    public String getPoster() {
-        return poster;
-    }
+//
+//    /**
+//     * If security is usemask then this is defined with the 32-bit unsigned int bit-mask of who is allowed to access this post.
+//     *
+//     * @return mask
+//     */
+//    public Integer getAllowmask() {
+//        return allowmask;
+//    }
+//
+//    /**
+//     * If the poster of this event is different from the user value sent above, then this will be not null and will
+//     * specify the username of the poster of this event. If this key is not present, then it is safe to assume that
+//     * the poster of this event is none other than user.
+//     *
+//     * @return name
+//     */
+//    public String getPoster() {
+//        return poster;
+//    }
 
     /**
      * Some kind of if id, required for getcomments
@@ -174,9 +174,9 @@ public class BlogEntry {
                 ", body='" + body + '\'' +
                 ", date=" + date +
                 ", subject='" + subject + '\'' +
-                ", security=" + security +
-                ", allowmask=" + allowmask +
-                ", poster='" + poster + '\'' +
+//                ", security=" + security +
+//                ", allowmask=" + allowmask +
+//                ", poster='" + poster + '\'' +
                 '}';
     }
 

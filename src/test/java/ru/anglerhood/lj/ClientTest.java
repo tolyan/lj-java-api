@@ -3,6 +3,8 @@ package ru.anglerhood.lj;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.log4j.BasicConfigurator;
+import org.junit.BeforeClass;
 import ru.anglerhood.lj.api.LJHelpers;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
@@ -21,7 +23,10 @@ import static org.junit.Assert.assertEquals;
 
 public class ClientTest
 {
-
+    @BeforeClass
+    public static void setup() {
+        BasicConfigurator.configure();
+    }
 
     @org.junit.Test
     public void getBlogEntry() throws ParseException {

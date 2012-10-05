@@ -5,6 +5,7 @@ import org.sqlite.SQLiteJDBCLoader;
 import ru.anglerhood.lj.api.XMLRPCClient;
 import ru.anglerhood.lj.api.XMLRPCClientImpl;
 import ru.anglerhood.lj.api.xmlrpc.arguments.LoginArgument;
+import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.UserData;
 
 import java.io.UnsupportedEncodingException;
@@ -17,6 +18,9 @@ public class EntryPoint {
         System.out.println(String.format("running in %s mode", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java"));
         BlogEntryWriter writer = new SQLiteWriter("test");
         writer.init();
+        Client client = new Client();
+        BlogEntry entry = client.getBlogEntry(-1);
+        writer.write(entry);
 
     }
 
