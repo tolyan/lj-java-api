@@ -36,21 +36,28 @@ import java.util.List;
 */
 public class SQLiteWriter implements BlogEntryWriter {
     private static Log logger = LogFactory.getLog(SQLiteWriter.class);
+    public static final String ITEMID = "itemid";
+    public static final String PERMALINK = "url";
+    public static final String ANUM = "anum";
+    public static final String BODY = "event";
+    public static final String DATE = "eventtime";
+    public static final String SUBJECT = "subject";
+    public static final String REPLY_COUNT = "reply_count";
 
     private Connection connection;
     private String journal;
-    private static final String ENTRY = "entry";
+    public static final String ENTRY = "entry";
     private final static String BLOG_ENTRY_SCHEME =  ENTRY + " (" +
-                                                                "itemid integer PRIMARY KEY," +
-                                                                "permalink string," +
-                                                                "anum integer," +
-                                                                "body string," +
-                                                                "date datetime," +
-                                                                "subject string, " +
-                                                                "reply_count integer" +
+                                                                ITEMID + " integer PRIMARY KEY," +
+                                                                PERMALINK + " string," +
+                                                                ANUM + " integer," +
+                                                                BODY +" string," +
+                                                                DATE + " datetime," +
+                                                                SUBJECT + " string, " +
+                                                                REPLY_COUNT + " integer" +
                                                                 ")";
-    private static final String COMMENT = "comment" ;
-    public final static String COMMENT_SCHEME = COMMENT + " (" +
+    public static final String COMMENT = "comment" ;
+    private final static String COMMENT_SCHEME = COMMENT + " (" +
                                                                 "entryid integer, " +
                                                                 "dtalkid integer, " +
                                                                 "parent_dtalkid integer, " +

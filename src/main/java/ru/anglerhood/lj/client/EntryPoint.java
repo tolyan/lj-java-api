@@ -21,9 +21,13 @@ public class EntryPoint {
         System.out.println(String.format("running in %s mode", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java"));
         Client client = new Client();
 
+//        client.initWriter("client_test_api" , SQLiteWriter.class);
+//        client.storeJournal();
 
-        client.initWriter(client.getUser(), SQLiteWriter.class);
-        client.storeJournal();
+        BlogEntryReader reader = new SQLiteReader("client_test_api");
+        BlogEntry entry = reader.readEntry(1);
+        System.out.println(entry);
+
 
     }
 
