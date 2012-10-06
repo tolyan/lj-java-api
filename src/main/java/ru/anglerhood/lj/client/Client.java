@@ -37,6 +37,8 @@ import ru.anglerhood.lj.api.xmlrpc.arguments.GetEventsArgument;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 
@@ -46,11 +48,14 @@ import java.util.List;
 
 public class Client {
     private final XMLRPCClient client = new XMLRPCClientImpl();
+    private BlogEntryWriter writer;
+
     private Log logger = LogFactory.getLog(Client.class);
     private static final int TIMEOUT = 0;
 
     private String user;
     private String passwd;
+
 
     public Client(){
         //N.B.! IDEA starts without env variables set in bashrc/bash_profile.
@@ -89,7 +94,7 @@ public class Client {
     public List<Comment> getComments(int entryId, int anum) {
         GetCommentsArgument arg = new GetCommentsArgument();
         arg.setCreds(user, passwd);
-        arg.setDItemId(BlogEntry.getDItemId(entryId, anum));
+        arg.setDItemId(entryId, anum);
         arg.setExpandStrategy("expand_all");
         arg.setLineEndings("unix");
         arg.setJournal(user);
@@ -105,5 +110,45 @@ public class Client {
         return getComments(entry.getItemid(), entry.getAnum());
     }
 
+    public void storeFullEntry(int entryId, Class writerClass) {
+        try {
+            BlogEntry entry = getBlogEntry(entryId);
+            List<Comment> comments = getComments(entry);
+            Constructor<BlogEntryWriter> ctor = writerClass.getConstructor(String.class);
+            writer = ctor.newInstance(user);
+            writer.write(entry);
+            writer.write(comments);
 
+        } catch (InstantiationException e) {
+            logger.error("Could not instatiate class " + writerClass.getName());
+        } catch (IllegalAccessException e) {
+            logger.error("Illegal access to class " + writerClass.getName());
+        } catch (NoSuchMethodException e) {
+            logger.error("Constructor is not defined for " + writerClass.getName());
+        } catch (InvocationTargetException e) {
+           logger.error("Error while invocing constructor for " + writerClass.getName());
+        }
+
+    }
+    
+    public void initWriter(String journal, Class writerClass) {
+        try {
+            Constructor<BlogEntryWriter> ctor = writerClass.getConstructor(String.class);
+            writer = ctor.newInstance(journal);
+            writer.init();
+        } catch (InstantiationException e) {
+            logger.error("Could not instatiate class " + writerClass.getName());
+        } catch (IllegalAccessException e) {
+            logger.error("Illegal access to class " + writerClass.getName());
+        } catch (NoSuchMethodException e) {
+            logger.error("Constructor is not defined for " + writerClass.getName());
+        } catch (InvocationTargetException e) {
+            logger.error("Error while invocing constructor for " + writerClass.getName());
+        }  
+    }
+
+
+    public String getUser() {
+        return user;
+    }
 }

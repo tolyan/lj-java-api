@@ -18,13 +18,9 @@ public class EntryPoint {
     public static void main(String[] args) throws ClassNotFoundException {
         BasicConfigurator.configure();
         System.out.println(String.format("running in %s mode", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java"));
-        BlogEntryWriter writer = new SQLiteWriter("test");
-        writer.init();
         Client client = new Client();
-        BlogEntry entry = client.getBlogEntry(-1);
-        List<Comment> commentList = client.getComments(entry);
-        writer.write(entry);
-        writer.write(commentList, entry.getItemid());
+        client.initWriter(client.getUser(), SQLiteWriter.class);
+        client.storeFullEntry(-1, SQLiteWriter.class);
 
     }
 

@@ -96,6 +96,7 @@ public class XMLRPCClientImpl implements XMLRPCClient {
         logger.debug("Entering getcomments(" + argument + ", " + timeout + ")");
         argument.stripNullValues();
         List<Comment> result = new LinkedList<Comment>();
+        Integer entryId = (Integer) argument.get(GetCommentsArgument.ENTRYID);
         try {
             Map commentsMap;
             commentsMap = (Map) doXmlRpcCall("LJ.XMLRPC.getcomments", new Object[]{argument}, timeout);
@@ -103,7 +104,7 @@ public class XMLRPCClientImpl implements XMLRPCClient {
 
             for (Object anArray : array) {
                 Map map = (Map) anArray;
-                Comment comment = new Comment(map);
+                Comment comment = new Comment(map, entryId);
                 result.add(comment);
             }
             logger.debug("Exiting getcomments");

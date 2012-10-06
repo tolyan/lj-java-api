@@ -27,6 +27,8 @@
 
 package ru.anglerhood.lj.api.xmlrpc.arguments;
 
+import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
+
 /**
  * Created with IntelliJ IDEA.
  * User: anglerhood
@@ -36,8 +38,11 @@ package ru.anglerhood.lj.api.xmlrpc.arguments;
  */
 public class GetCommentsArgument extends BaseArgument {
 
-    public void setDItemId(Integer id) {
-        struct.put("ditemid", id);
+    public static final String ENTRYID = "entryid";
+
+    public void setDItemId(Integer entryId, Integer anum ) {
+        struct.put("ditemid", BlogEntry.getDItemId(entryId, anum));
+        struct.put(ENTRYID, entryId);
     }
 
     public void setItemId(String id) {
@@ -55,7 +60,6 @@ public class GetCommentsArgument extends BaseArgument {
     public void setJournal(String journal) {
         struct.put("journal", journal);
     }
-
 
     /*
         Possible values thread, list

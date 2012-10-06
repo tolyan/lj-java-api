@@ -39,9 +39,9 @@ import java.util.List;
 */
 public class SQLiteWriter implements BlogEntryWriter {
     private static Log logger = LogFactory.getLog(SQLiteWriter.class);
-    private String journal;
-    private Connection connection;
 
+    private Connection connection;
+    private String journal;
     private static final String ENTRY = "entry";
     private final static String BLOG_ENTRY_SCHEME =  ENTRY + " (" +
                                                                 "itemid integer PRIMARY KEY," +
@@ -74,37 +74,32 @@ public class SQLiteWriter implements BlogEntryWriter {
     private static final String INSERT_COMMENT = "INSERT into " + COMMENT +
                                                " values(?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
+
     public SQLiteWriter(String journal) {
-        this.journal = journal;
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + journal + ".db");
-
         } catch (ClassNotFoundException e) {
             logger.error("Could find JDBC driver for SQLite! " + e.getMessage());
         } catch (SQLException e) {
             logger.error("Invalid SQL: " + e.getMessage());
-        } finally {
-            if (null != connection ) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    logger.error("SQLite could close connection: " + e.getMessage());
-                }
-            }
         }
+        this.journal = journal;
     }
+
+
+
 
     @Override
     public void init(){
-        Connection conn = null;
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:" + journal + ".db");
             Statement st = createTimeoutStatetment();
             st.executeUpdate("drop table if exists " + ENTRY);
             st.executeUpdate("create table " + BLOG_ENTRY_SCHEME);
+            logger.debug("Created table: " + BLOG_ENTRY_SCHEME);
             st.executeUpdate("drop table if exists " + COMMENT);
             st.executeUpdate("create table " + COMMENT_SCHEME);
+            logger.debug("Created table: " + COMMENT);
             st.close();
         } catch (SQLException e) {
             logger.error("Invalid SQL: " + e.getMessage());
@@ -131,11 +126,11 @@ public class SQLiteWriter implements BlogEntryWriter {
     }
 
     @Override
-    public void write(Comment comment, int entryid) {
+    public void write(Comment comment) {
         try {
             logger.debug("Write comment entry to DB");
             PreparedStatement st = connection.prepareStatement(INSERT_COMMENT);
-            st.setInt(1, entryid);
+            st.setInt(1, comment.getEntryId());
             st.setInt(2, comment.getDtalkid());
             st.setInt(3, comment.getParentDtalkId());
             st.setInt(4, comment.getPosterid());
@@ -152,10 +147,10 @@ public class SQLiteWriter implements BlogEntryWriter {
     }
 
     @Override
-    public void write(List<Comment> comments, int entryid) {
+    public void write(List<Comment> comments) {
         for (Comment comment : comments) {
-            write(comment, entryid);
-            write(comment.getChildren(), entryid);
+            write(comment);
+            write(comment.getChildren());
         }
 
     }

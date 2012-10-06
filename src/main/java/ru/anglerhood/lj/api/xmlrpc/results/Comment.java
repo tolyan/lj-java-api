@@ -54,6 +54,7 @@ public class Comment {
     private Integer posterid;
     private List <Comment> children;
     private Integer parentdtalkid;
+    private Integer entryId;
 
     /**
      * Represents commentary collection for specific BlogEntry
@@ -61,7 +62,8 @@ public class Comment {
      * @throws ParseException
      * @throws UnsupportedEncodingException
      */
-    public Comment(Map map) throws ParseException, UnsupportedEncodingException {
+    public Comment(Map map, Integer entryId) throws ParseException, UnsupportedEncodingException {
+        this.entryId = entryId;
         parentdtalkid = (Integer) map.get("parentdtalkid");
         pages = (Integer) map.get("pages");
         datePostUnix = (Integer) map.get("datepostunix");
@@ -77,12 +79,13 @@ public class Comment {
         children = addChildren(map);
     }
 
+
     private List<Comment> addChildren(Map map) throws ParseException, UnsupportedEncodingException {
         List<Comment> result = new LinkedList<Comment>();
         Object [] rawChildren = (Object [])map.get("children");
         if(null != rawChildren) {
             for (Object childMap : rawChildren ) {
-                Comment child = new Comment((Map) childMap);
+                Comment child = new Comment((Map) childMap, this.entryId);
                 result.add(child);
             }
         }
@@ -145,6 +148,9 @@ public class Comment {
         return children;
     }
 
+    public Integer getEntryId() {
+        return entryId;
+    }
 
     public String toString() {
         return "Comment: { " +
@@ -161,10 +167,6 @@ public class Comment {
                     ", state =>"        + Util.nullString(state) +
                     ", posterid =>"     + Util.nullString(posterid) + "}";
     }
-
-
-
-
 
 
 
