@@ -41,6 +41,21 @@ import java.util.Map;
 
 public class Comment {
     public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("yyyy'-'MM'-'dd' 'HH:mm:ss");
+
+    public static final String PARENTDTALKID = "parentdtalkid";
+    public static final String PAGES = "pages";
+    public static final String DATEPOSTUNIX = "datepostunix";
+    public static final String IS_LOADED = "is_loaded";
+    public static final String IS_SHOW = "is_show";
+    public static final String POSTERNAME = "postername";
+    public static final String DTALKID = "dtalkid";
+    public static final String LEVEL = "level";
+    public static final String SUBJECT = "subject";
+    public static final String BODY = "body";
+    public static final String STATE = "state";
+    public static final String POSTERID = "posterid";
+    public static final String ENTRYID = "entryid";
+
     private Integer pages;
     private Integer datePostUnix;
     private Integer isLoaded;
@@ -62,25 +77,25 @@ public class Comment {
      * @throws ParseException
      * @throws UnsupportedEncodingException
      */
-    public Comment(Map map, Integer entryId) throws ParseException, UnsupportedEncodingException {
+    public Comment(Map map, Integer entryId) throws UnsupportedEncodingException {
         this.entryId = entryId;
-        parentdtalkid = (Integer) map.get("parentdtalkid");
-        pages = (Integer) map.get("pages");
-        datePostUnix = (Integer) map.get("datepostunix");
-        isLoaded = (Integer) map.get("is_loaded");
-        isShow = (Integer) map.get("is_show");
-        postername = (String) map.get("postername");
-        dtalkid = (Integer) map.get("dtalkid");
-        level = (Integer) map.get("level");
-        subject = LJHelpers.getUnicodeText(map.get("subject"));
-        body = LJHelpers.getUnicodeText(map.get("body"));
-        state = (String) map.get("state");
-        posterid = (Integer) map.get("posterid" );
+        parentdtalkid = (Integer) map.get(PARENTDTALKID);
+        pages = (Integer) map.get(PAGES);
+        datePostUnix = (Integer) map.get(DATEPOSTUNIX);
+        isLoaded = (Integer) map.get(IS_LOADED);
+        isShow = (Integer) map.get(IS_SHOW);
+        postername = (String) map.get(POSTERNAME);
+        dtalkid = (Integer) map.get(DTALKID);
+        level = (Integer) map.get(LEVEL);
+        subject = LJHelpers.getUnicodeText(map.get(SUBJECT));
+        body = LJHelpers.getUnicodeText(map.get(BODY));
+        state = (String) map.get(STATE);
+        posterid = (Integer) map.get(POSTERID);
         children = addChildren(map);
     }
 
 
-    private List<Comment> addChildren(Map map) throws ParseException, UnsupportedEncodingException {
+    private List<Comment> addChildren(Map map) throws UnsupportedEncodingException {
         List<Comment> result = new LinkedList<Comment>();
         Object [] rawChildren = (Object [])map.get("children");
         if(null != rawChildren) {

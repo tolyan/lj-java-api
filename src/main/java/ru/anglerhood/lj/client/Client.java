@@ -38,6 +38,7 @@ import ru.anglerhood.lj.api.xmlrpc.arguments.GetEventsArgument;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 import ru.anglerhood.lj.api.xmlrpc.results.DayCount;
+import ru.anglerhood.lj.client.sql.SQLiteWriter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

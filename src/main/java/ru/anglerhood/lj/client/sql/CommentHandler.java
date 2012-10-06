@@ -1,16 +1,16 @@
-package ru.anglerhood.lj.client;
+package ru.anglerhood.lj.client.sql;
 
-import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 
 import java.io.UnsupportedEncodingException;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,43 +40,28 @@ import java.util.Map;
 * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
 * THE POSSIBILITY OF SUCH DAMAGE.
 */
-public class SQLiteReader implements BlogEntryReader {
-
-    private static Log logger = LogFactory.getLog(SQLiteReader.class);
-    private Connection connection;
-    private String journal;
-
-
-    private static String SELECT_ENTRY = "SELECT * from " + SQLiteWriter.ENTRY +
-                                            " where " + SQLiteWriter.ITEMID + " = ?;";
-
-    public SQLiteReader(String journal) {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:" + journal + ".db");
-        } catch (ClassNotFoundException e) {
-            logger.error("Could find JDBC driver for SQLite! " + e.getMessage());
-        } catch (SQLException e) {
-            logger.error("Invalid SQL: " + e.getMessage());
-        }
-        this.journal = journal;
-    }
-    @Override
-    public BlogEntry readEntry(int entryId) {
-        BlogEntry entry = null;
-        try {
-            QueryRunner runner = new QueryRunner();
-            ResultSetHandler<List<BlogEntry>>  handler = new BlogEntryHandler();
-            List<BlogEntry> result = runner.query(connection, SELECT_ENTRY, handler , entryId);
-            entry = result.get(0);
-        } catch (SQLException e) {
-            logger.error(String.format("SQL Error: %s", e.getMessage()));
-        }
-        return entry;
-    }
+public class CommentHandler  implements ResultSetHandler {
+    private  Log logger = LogFactory.getLog(CommentHandler.class);
 
     @Override
-    public List<Comment> readComments(int entryId) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public List<Comment> handle(ResultSet resultSet) throws SQLException {
+        List<Comment> result = new LinkedList<Comment>();
+        while(resultSet.next()) {
+            Map raw = new HashMap();
+            raw.put(Comment.DTALKID, resultSet.getInt(Comment.DTALKID));
+            raw.put(Comment.SUBJECT, resultSet.getString(Comment.SUBJECT));
+            raw.put(Comment.DATEPOSTUNIX, resultSet.getInt(Comment.DATEPOSTUNIX));
+            raw.put(Comment.BODY, resultSet.getString(Comment.BODY));
+            raw.put(Comment.DATEPOSTUNIX, resultSet.getInt(Comment.DATEPOSTUNIX));
+            raw.put(Comment.POSTERNAME, resultSet.getString(Comment.POSTERNAME));
+            raw.put(Comment.PARENTDTALKID, resultSet.getInt(Comment.PARENTDTALKID));
+            raw.put(Comment.LEVEL, resultSet.getInt(Comment.LEVEL));
+            try {
+                result.add(new Comment(raw,resultSet.getInt(Comment.ENTRYID)));
+            } catch (UnsupportedEncodingException e) {
+                logger.error(String.format("Blog entry %s contains text in unsupported encoding, %s", resultSet.getInt(Comment.DTALKID), e.getMessage()));
+            }
+        }
+        return result;
     }
 }

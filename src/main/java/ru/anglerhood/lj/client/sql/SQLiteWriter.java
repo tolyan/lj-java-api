@@ -1,9 +1,10 @@
-package ru.anglerhood.lj.client;
+package ru.anglerhood.lj.client.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
+import ru.anglerhood.lj.client.BlogEntryWriter;
 
 import java.sql.*;
 import java.util.List;
@@ -36,26 +37,21 @@ import java.util.List;
 */
 public class SQLiteWriter implements BlogEntryWriter {
     private static Log logger = LogFactory.getLog(SQLiteWriter.class);
-    public static final String ITEMID = "itemid";
-    public static final String PERMALINK = "url";
-    public static final String ANUM = "anum";
-    public static final String BODY = "event";
-    public static final String DATE = "eventtime";
-    public static final String SUBJECT = "subject";
-    public static final String REPLY_COUNT = "reply_count";
+
 
     private Connection connection;
     private String journal;
     public static final String ENTRY = "entry";
-    private final static String BLOG_ENTRY_SCHEME =  ENTRY + " (" +
-                                                                ITEMID + " integer PRIMARY KEY," +
-                                                                PERMALINK + " string," +
-                                                                ANUM + " integer," +
-                                                                BODY +" string," +
-                                                                DATE + " datetime," +
-                                                                SUBJECT + " string, " +
-                                                                REPLY_COUNT + " integer" +
-                                                                ")";
+    private final static String BLOG_ENTRY_SCHEME =
+            ENTRY + " (" +
+            BlogEntry.ITEMID + " integer PRIMARY KEY," +
+            BlogEntry.PERMALINK + " string," +
+            BlogEntry.ANUM + " integer," +
+            BlogEntry.BODY +" string," +
+            BlogEntry.DATE + " datetime," +
+            BlogEntry.SUBJECT + " string, " +
+            BlogEntry.REPLY_COUNT + " integer" +
+            ")";
     public static final String COMMENT = "comment" ;
     private final static String COMMENT_SCHEME = COMMENT + " (" +
                                                                 "entryid integer, " +

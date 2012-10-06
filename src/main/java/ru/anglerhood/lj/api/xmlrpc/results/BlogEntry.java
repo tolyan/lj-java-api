@@ -40,6 +40,16 @@ import java.util.Map;
  */
 public class BlogEntry {
     public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("yyyy'-'MM'-'dd' 'HH:mm:ss");
+
+    public static final String ITEMID = "itemid";
+    public static final String PERMALINK = "url";
+    public static final String ANUM = "anum";
+    public static final String BODY = "event";
+    public static final String DATE = "eventtime";
+    public static final String SUBJECT = "subject";
+    public static final String REPLY_COUNT = "reply_count";
+
+
     private int itemid;
     private String permalink;
     private Integer anum;
@@ -47,21 +57,19 @@ public class BlogEntry {
     private Date date;
     private String subject;
     private Integer reply_count;
-//    private SecurityType security;
-//    private Integer allowmask;
-//    private String poster;
+
 
     //TODO: implement support for: props (metadata)
 
 
     public BlogEntry(Map map) throws UnsupportedEncodingException, ParseException {
-        itemid = (Integer) map.get("itemid");
-        permalink = (String) map.get("url");
-        anum = (Integer) map.get("anum");
-        subject = LJHelpers.getUnicodeText(map.get("subject"));
-        body = LJHelpers.getUnicodeText(map.get("event"));
-        date = LJHelpers.parseDate((String) map.get("eventtime"), DATEFORMAT);
-        reply_count = (Integer) map.get("reply_count");
+        itemid = (Integer) map.get(ITEMID);
+        permalink = (String) map.get(PERMALINK);
+        anum = (Integer) map.get(ANUM);
+        subject = LJHelpers.getUnicodeText(map.get(SUBJECT));
+        body = LJHelpers.getUnicodeText(map.get(BODY));
+        date = LJHelpers.parseDate((String) map.get(DATE), DATEFORMAT);
+        reply_count = (Integer) map.get(REPLY_COUNT);
 //        security = SecurityType.getInstance((String) map.get("security"));
 //        allowmask = (Integer) map.get("allowmask");
 //        poster = (String) map.get("poster");

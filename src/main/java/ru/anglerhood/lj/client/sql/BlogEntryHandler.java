@@ -1,4 +1,4 @@
-package ru.anglerhood.lj.client;
+package ru.anglerhood.lj.client.sql;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.logging.Log;
@@ -48,19 +48,19 @@ public class BlogEntryHandler implements ResultSetHandler {
         List<BlogEntry> result = new LinkedList<BlogEntry>();
         while(resultSet.next()) {
             Map raw = new HashMap();
-            raw.put(SQLiteWriter.ITEMID, resultSet.getInt(SQLiteWriter.ITEMID));
-            raw.put(SQLiteWriter.PERMALINK, resultSet.getString(SQLiteWriter.PERMALINK));
-            raw.put(SQLiteWriter.ANUM, resultSet.getInt(SQLiteWriter.ANUM));
-            raw.put(SQLiteWriter.BODY, resultSet.getString(SQLiteWriter.BODY));
-            raw.put(SQLiteWriter.DATE, BlogEntry.DATEFORMAT.format(resultSet.getDate(SQLiteWriter.DATE)));
-            raw.put(SQLiteWriter.SUBJECT, resultSet.getString(SQLiteWriter.SUBJECT));
-            raw.put(SQLiteWriter.REPLY_COUNT, resultSet.getInt(SQLiteWriter.REPLY_COUNT));
+            raw.put(BlogEntry.ITEMID, resultSet.getInt(BlogEntry.ITEMID));
+            raw.put(BlogEntry.PERMALINK, resultSet.getString(BlogEntry.PERMALINK));
+            raw.put(BlogEntry.ANUM, resultSet.getInt(BlogEntry.ANUM));
+            raw.put(BlogEntry.BODY, resultSet.getString(BlogEntry.BODY));
+            raw.put(BlogEntry.DATE, BlogEntry.DATEFORMAT.format(resultSet.getDate(BlogEntry.DATE)));
+            raw.put(BlogEntry.SUBJECT, resultSet.getString(BlogEntry.SUBJECT));
+            raw.put(BlogEntry.REPLY_COUNT, resultSet.getInt(BlogEntry.REPLY_COUNT));
             try {
                 result.add(new BlogEntry(raw));
             } catch (UnsupportedEncodingException e) {
-                logger.error(String.format("Blog entry %s contains text in unsupported encoding, %s", resultSet.getInt(SQLiteWriter.ITEMID), e.getMessage()));
+                logger.error(String.format("Blog entry %s contains text in unsupported encoding, %s", resultSet.getInt(BlogEntry.ITEMID), e.getMessage()));
             } catch (ParseException e) {
-                logger.error(String.format("Error while parsing entry %s, %s", resultSet.getInt(SQLiteWriter.ITEMID), e.getMessage()));
+                logger.error(String.format("Error while parsing date %s, %s", resultSet.getDate(BlogEntry.DATE), e.getMessage()));
             }
         }
         return result;
