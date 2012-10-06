@@ -9,6 +9,7 @@ import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 
 import java.sql.*;
 import java.util.Date;
+import java.util.List;
 
 /*
 * Copyright (c) 2012, Anatoly Rybalchenko
@@ -43,15 +44,35 @@ public class SQLiteWriter implements BlogEntryWriter {
 
     private static final String ENTRY = "entry";
     private final static String BLOG_ENTRY_SCHEME =  ENTRY + " (" +
-                                                                "itemid integer," +
+                                                                "itemid integer PRIMARY KEY," +
                                                                 "permalink string," +
                                                                 "anum integer," +
                                                                 "body string," +
                                                                 "date datetime," +
                                                                 "subject string" +
                                                                 ")";
+    private static final String COMMENT = "comment" ;
+    public final static String COMMENT_SCHEME = COMMENT + " (" +
+                                                                "entryid integer, " +
+                                                                "dtalkid integer, " +
+                                                                "parent_dtalkid integer, " +
+                                                                "posterid integer, " +
+                                                                "postername string, " +
+                                                                "datepostunix integer, " +
+                                                                "level integer, " +
+                                                                "subject string, " +
+                                                                "body string, " +
+                                                                "FOREIGN KEY(entryid) REFERENCES " + ENTRY + "(entryid)" +
+                                                                ")";
+
+
+
+
+
     private static final String INSERT_ENTRY = "INSERT into " + ENTRY +
                                                " values(?, ?, ?, ?, ?, ?);";
+    private static final String INSERT_COMMENT = "INSERT into " + COMMENT +
+                                               " values(?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
     public SQLiteWriter(String journal) {
         this.journal = journal;
@@ -82,6 +103,8 @@ public class SQLiteWriter implements BlogEntryWriter {
             Statement st = createTimeoutStatetment();
             st.executeUpdate("drop table if exists " + ENTRY);
             st.executeUpdate("create table " + BLOG_ENTRY_SCHEME);
+            st.executeUpdate("drop table if exists " + COMMENT);
+            st.executeUpdate("create table " + COMMENT_SCHEME);
             st.close();
         } catch (SQLException e) {
             logger.error("Invalid SQL: " + e.getMessage());
@@ -91,7 +114,7 @@ public class SQLiteWriter implements BlogEntryWriter {
     @Override
     public void write(BlogEntry entry) {
         try {
-            logger.debug(INSERT_ENTRY);
+            logger.debug("Write blog entry to DB");
             PreparedStatement st = connection.prepareStatement(INSERT_ENTRY);
             st.setInt(1, entry.getItemid());
             st.setString(2, entry.getPermalink());
@@ -99,18 +122,42 @@ public class SQLiteWriter implements BlogEntryWriter {
             st.setString(4, entry.getBody());
             st.setDate(5, new java.sql.Date(entry.getDate().getTime()));
             st.setString(6, entry.getSubject());
-            logger.debug(st.toString());
             st.execute();
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            logger.error("SQL Error: " + e.getMessage());
         }
 
 
     }
 
     @Override
-    public void write(Comment comment) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void write(Comment comment, int entryid) {
+        try {
+            logger.debug("Write comment entry to DB");
+            PreparedStatement st = connection.prepareStatement(INSERT_COMMENT);
+            st.setInt(1, entryid);
+            st.setInt(2, comment.getDtalkid());
+            st.setInt(3, comment.getParentDtalkId());
+            st.setInt(4, comment.getPosterid());
+            st.setString(5, comment.getPostername());
+            st.setInt(6, comment.getDatePostUnix());
+            st.setInt(7, comment.getLevel());
+            st.setString(8, comment.getSubject());
+            st.setString(9, comment.getBody());
+            st.execute();
+        } catch (SQLException e) {
+            logger.error("SQL Error: " + e.getMessage());
+        }
+
+    }
+
+    @Override
+    public void write(List<Comment> comments, int entryid) {
+        for (Comment comment : comments) {
+            write(comment, entryid);
+            write(comment.getChildren(), entryid);
+        }
+
     }
 
     private Statement createTimeoutStatetment() throws SQLException {

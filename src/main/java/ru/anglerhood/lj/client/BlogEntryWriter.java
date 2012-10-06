@@ -30,8 +30,12 @@ package ru.anglerhood.lj.client;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 
+import java.util.List;
+
 public interface BlogEntryWriter {
     public void write(BlogEntry entry);
-    public void write(Comment comment);
+    public void write(Comment comment, int entryid);
+    public void write(List<Comment> comments, int entryid);
     void init();
 }
+

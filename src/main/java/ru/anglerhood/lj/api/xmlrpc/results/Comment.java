@@ -53,6 +53,7 @@ public class Comment {
     private String state;
     private Integer posterid;
     private List <Comment> children;
+    private Integer parentdtalkid;
 
     /**
      * Represents commentary collection for specific BlogEntry
@@ -61,6 +62,7 @@ public class Comment {
      * @throws UnsupportedEncodingException
      */
     public Comment(Map map) throws ParseException, UnsupportedEncodingException {
+        parentdtalkid = (Integer) map.get("parentdtalkid");
         pages = (Integer) map.get("pages");
         datePostUnix = (Integer) map.get("datepostunix");
         isLoaded = (Integer) map.get("is_loaded");
@@ -73,7 +75,6 @@ public class Comment {
         state = (String) map.get("state");
         posterid = (Integer) map.get("posterid" );
         children = addChildren(map);
-        //TODO implement child comments unmarshalling
     }
 
     private List<Comment> addChildren(Map map) throws ParseException, UnsupportedEncodingException {
@@ -87,6 +88,11 @@ public class Comment {
         }
         return result;
     }
+
+    public Integer getParentDtalkId() {
+        return parentdtalkid;
+    }
+
 
     public Integer getPages() {
         return pages;
@@ -117,7 +123,10 @@ public class Comment {
     }
 
     public String getSubject() {
-        return subject;
+        if (subject == null)
+            return "";
+        else
+            return subject;
     }
 
     public String getBody() {
@@ -139,7 +148,8 @@ public class Comment {
 
     public String toString() {
         return "Comment: { " +
-                    "pages =>"          + Util.nullString(pages) +
+                    "parentdtalkid =>"        + Util.nullString((parentdtalkid)) +
+                    ", pages =>"          + Util.nullString(pages) +
                     ", datepostunix =>" + Util.nullString(datePostUnix) +
                     ", is_loaded =>"    + Util.nullString(isLoaded) +
                     ", is_show =>"      + Util.nullString(isShow) +
