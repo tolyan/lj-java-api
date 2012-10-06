@@ -33,12 +33,16 @@ import org.apache.commons.logging.LogFactory;
 import ru.anglerhood.lj.api.XMLRPCClient;
 import ru.anglerhood.lj.api.XMLRPCClientImpl;
 import ru.anglerhood.lj.api.xmlrpc.arguments.GetCommentsArgument;
+import ru.anglerhood.lj.api.xmlrpc.arguments.GetDayCountsArgument;
 import ru.anglerhood.lj.api.xmlrpc.arguments.GetEventsArgument;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
+import ru.anglerhood.lj.api.xmlrpc.results.DayCount;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 
@@ -83,6 +87,27 @@ public class Client {
             return entries[0];
 
     }
+
+    /**
+     * Retrieves all blog entries published on the given date
+     *
+     * @param date    certain date
+     * @return an array of blog entries
+     * @see ru.anglerhood.lj.api.xmlrpc.results.BlogEntry
+     */
+    public BlogEntry[] getBlogEntriesOn(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        GetEventsArgument argument = new GetEventsArgument();
+        argument.setCreds(user, passwd);
+        argument.setSelecttype(GetEventsArgument.Type.DAY);
+        argument.setYear(calendar.get(Calendar.YEAR));
+        argument.setMonth(calendar.get(Calendar.MONTH) + 1);
+        argument.setDay(calendar.get(Calendar.DAY_OF_MONTH));
+        return client.getevents(argument, TIMEOUT);
+    }
+
 
     /**
      * Gets comments collection for specified blog entry
@@ -147,8 +172,54 @@ public class Client {
         }  
     }
 
+    /**
+     * Retrieves the number of journal entries per day.
+     *
+     * @return DayCount struct
+     * @see ru.anglerhood.lj.api.xmlrpc.results.DayCount
+     */
+    public DayCount[] getDayCounts() {
+        GetDayCountsArgument argument = new GetDayCountsArgument();
+        argument.setCreds(user, passwd);
+        argument.setUsejournal(user);
+        return client.getdaycounts(argument, TIMEOUT);
+    }
+
+
+        /**
+        * Retrieves the number of journal entries per day.
+        *
+        * @return DayCount struct
+        * @see ru.anglerhood.lj.api.xmlrpc.results.DayCount
+        */
+    public DayCount[] getDayCounts(String journalName) {
+        GetDayCountsArgument argument = new GetDayCountsArgument();
+        argument.setCreds(user, passwd);
+        argument.setUsejournal(journalName);
+        return client.getdaycounts(argument, TIMEOUT);
+    }
+
+    public void storeJournal() {
+        storeJournal(user);
+    }
+
+    public void storeJournal(String journalName) {
+        DayCount [] counts = getDayCounts();
+        for(DayCount count : counts) {
+            Date date = count.getDate();
+            BlogEntry [] entries = getBlogEntriesOn(date);
+            for (BlogEntry entry : entries) {
+                storeFullEntry(entry.getItemid(), SQLiteWriter.class);
+            }
+        }
+
+    }
+
+    //TODO impelement full journal download
 
     public String getUser() {
         return user;
     }
+
+
 }

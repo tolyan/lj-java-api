@@ -2,13 +2,10 @@ package ru.anglerhood.lj.client;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import ru.anglerhood.lj.api.XMLRPCClient;
-import ru.anglerhood.lj.api.xmlrpc.SecurityType;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 
 import java.sql.*;
-import java.util.Date;
 import java.util.List;
 
 /*
@@ -49,7 +46,8 @@ public class SQLiteWriter implements BlogEntryWriter {
                                                                 "anum integer," +
                                                                 "body string," +
                                                                 "date datetime," +
-                                                                "subject string" +
+                                                                "subject string, " +
+                                                                "reply_count integer" +
                                                                 ")";
     private static final String COMMENT = "comment" ;
     public final static String COMMENT_SCHEME = COMMENT + " (" +
@@ -65,12 +63,12 @@ public class SQLiteWriter implements BlogEntryWriter {
                                                                 "FOREIGN KEY(entryid) REFERENCES " + ENTRY + "(entryid)" +
                                                                 ")";
 
-
+    //TODO add indexes
 
 
 
     private static final String INSERT_ENTRY = "INSERT into " + ENTRY +
-                                               " values(?, ?, ?, ?, ?, ?);";
+                                               " values(?, ?, ?, ?, ?, ?, ?);";
     private static final String INSERT_COMMENT = "INSERT into " + COMMENT +
                                                " values(?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
@@ -117,6 +115,7 @@ public class SQLiteWriter implements BlogEntryWriter {
             st.setString(4, entry.getBody());
             st.setDate(5, new java.sql.Date(entry.getDate().getTime()));
             st.setString(6, entry.getSubject());
+            st.setInt(7, entry.getReply_count());
             st.execute();
         } catch (SQLException e) {
             logger.error("SQL Error: " + e.getMessage());

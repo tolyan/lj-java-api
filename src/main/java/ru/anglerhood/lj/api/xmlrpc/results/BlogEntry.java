@@ -28,7 +28,6 @@
 package ru.anglerhood.lj.api.xmlrpc.results;
 
 import ru.anglerhood.lj.api.LJHelpers;
-import ru.anglerhood.lj.api.xmlrpc.SecurityType;
 
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -47,6 +46,7 @@ public class BlogEntry {
     private String body;
     private Date date;
     private String subject;
+    private Integer reply_count;
 //    private SecurityType security;
 //    private Integer allowmask;
 //    private String poster;
@@ -61,6 +61,7 @@ public class BlogEntry {
         subject = LJHelpers.getUnicodeText(map.get("subject"));
         body = LJHelpers.getUnicodeText(map.get("event"));
         date = LJHelpers.parseDate((String) map.get("eventtime"), DATEFORMAT);
+        reply_count = (Integer) map.get("reply_count");
 //        security = SecurityType.getInstance((String) map.get("security"));
 //        allowmask = (Integer) map.get("allowmask");
 //        poster = (String) map.get("poster");
@@ -121,6 +122,11 @@ public class BlogEntry {
     public String getSubject() {
         return subject;
     }
+
+    public Integer getReply_count() {
+        return reply_count;
+    }
+
 //
 //
 //    /**

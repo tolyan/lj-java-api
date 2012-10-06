@@ -7,6 +7,7 @@ import ru.anglerhood.lj.api.XMLRPCClientImpl;
 import ru.anglerhood.lj.api.xmlrpc.arguments.LoginArgument;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
+import ru.anglerhood.lj.api.xmlrpc.results.DayCount;
 import ru.anglerhood.lj.api.xmlrpc.results.UserData;
 
 import java.io.UnsupportedEncodingException;
@@ -19,8 +20,10 @@ public class EntryPoint {
         BasicConfigurator.configure();
         System.out.println(String.format("running in %s mode", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java"));
         Client client = new Client();
+
+
         client.initWriter(client.getUser(), SQLiteWriter.class);
-        client.storeFullEntry(-1, SQLiteWriter.class);
+        client.storeJournal();
 
     }
 
