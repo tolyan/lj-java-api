@@ -9,8 +9,7 @@ import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 import ru.anglerhood.lj.client.BlogEntryReader;
 
 import java.sql.*;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /*
 * Copyright (c) 2012, Anatoly Rybalchenko
@@ -43,13 +42,15 @@ public class SQLiteReader implements BlogEntryReader {
     private static Log logger = LogFactory.getLog(SQLiteReader.class);
     private Connection connection;
     private String journal;
+    private QueryRunner runner = new QueryRunner();
 
 
     private static final String SELECT_ENTRY = "SELECT * from " + SQLiteWriter.ENTRY +
                                             " where " + BlogEntry.ITEMID + " = ?;";
 
     private static final String SELECT_COMMENT = "SELECT * from "  + SQLiteWriter.COMMENT +
-                                                 "where " + Comment.ENTRYID + " = ?;";
+                                                 " where " + Comment.ENTRYID + " = ?" +
+                                                 " order by level, datepostunix asc;";
 
     public SQLiteReader(String journal) {
         try {
@@ -66,7 +67,7 @@ public class SQLiteReader implements BlogEntryReader {
     public BlogEntry readEntry(int entryId) {
         BlogEntry entry = null;
         try {
-            QueryRunner runner = new QueryRunner();
+
             ResultSetHandler<List<BlogEntry>>  handler = new BlogEntryHandler();
             List<BlogEntry> result = runner.query(connection, SELECT_ENTRY, handler , entryId);
             entry = result.get(0);
@@ -79,6 +80,55 @@ public class SQLiteReader implements BlogEntryReader {
     @Override
     public List<Comment> readComments(int entryId) {
         List<Comment> comments = new LinkedList<Comment>();
-        return comments;
+        ResultSetHandler<List<Comment>> handler = new CommentHandler();
+        try {
+            comments = runner.query(connection, SELECT_COMMENT, handler, entryId);
+        } catch (SQLException e) {
+            logger.error(String.format("SQL Error: %s, ", e.getMessage()));
+        }
+        return nestComments(comments);
     }
+
+    private List<Comment> nestComments(List<Comment> comments) {
+        List<Comment> result = new LinkedList<Comment>();
+        SortedMap<Integer, SortedSet<Comment>> levels = new TreeMap<Integer, SortedSet<Comment>>();
+        //distribute comments among levels
+        int maxLevel = -1;
+        for(Comment comment : comments) {
+            if(comment.getLevel() > maxLevel) {
+                maxLevel = comment.getLevel();
+
+                Comparator<Comment> comparator = new Comparator<Comment>() {
+                    @Override
+                    public int compare(Comment o1, Comment o2) {
+                        if (o1.getLevel().equals(o2.getLevel())) {
+                            return o1.getDatePostUnix() - o2.getDatePostUnix();
+                        } else {
+                            return o1.getLevel() - o2.getLevel();
+                        }
+
+                    }
+                };
+
+                levels.put(maxLevel, new TreeSet<Comment>(comparator));
+            }
+
+            levels.get(comment.getLevel()).add(comment);
+        }
+
+        for(int i = levels.lastKey(); i > levels.firstKey(); i--){
+            SortedSet<Comment> children = levels.get(i);
+            SortedSet<Comment> parents = levels.get(i - 1);
+            for(Comment child : children) {
+                for(Comment parent : parents) {
+                    if(child.getParentDtalkId().equals(parent.getDtalkid())){
+                        parent.addChild(child);
+                    }
+                }
+            }
+        }
+        result.addAll(levels.get(levels.firstKey()));
+        return result;
+    }
+
 }

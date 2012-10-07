@@ -42,7 +42,7 @@ import java.util.Map;
 public class Comment {
     public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("yyyy'-'MM'-'dd' 'HH:mm:ss");
 
-    public static final String PARENTDTALKID = "parentdtalkid";
+    public static final String PARENTDTALKID = "parent_dtalkid";
     public static final String PAGES = "pages";
     public static final String DATEPOSTUNIX = "datepostunix";
     public static final String IS_LOADED = "is_loaded";
@@ -105,6 +105,27 @@ public class Comment {
             }
         }
         return result;
+    }
+
+    public void addChild(Comment child) {
+        children.add(child);
+    }
+
+
+    public Comment findChild(Integer dtalkid) {
+        for (Comment comment : children) {
+           if (dtalkid.equals(comment.getDtalkid())){
+               return comment;
+           }
+        }
+
+        //Обход в ширину
+        for (Comment comment : children) {
+           Comment result = comment.findChild(dtalkid);
+           if (result != null) return result;
+        }
+
+        return null;
     }
 
     public Integer getParentDtalkId() {
@@ -183,6 +204,27 @@ public class Comment {
                     ", posterid =>"     + Util.nullString(posterid) + "}";
     }
 
+
+    public boolean  equals(Object obj){
+        if(this == obj) return true;
+        if((obj == null) || (this.getClass() != obj.getClass())) {
+            return false;
+        }
+        Comment test = (Comment) obj;
+        return  (test.entryId == this.entryId)
+                || (test.datePostUnix == this.datePostUnix)
+                || (test.dtalkid == this.dtalkid);
+
+    }
+
+
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + (null == entryId ? 0 : entryId.hashCode())
+                            + (null == datePostUnix ? 0 : datePostUnix.hashCode()
+                            + (null == dtalkid ? 0 : dtalkid.hashCode()));
+        return hash;
+    }
 
 
 }
