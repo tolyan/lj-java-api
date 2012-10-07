@@ -216,8 +216,6 @@ public class Client {
 
     }
 
-    //TODO impelement full journal download
-
     public String getUser() {
         return user;
     }

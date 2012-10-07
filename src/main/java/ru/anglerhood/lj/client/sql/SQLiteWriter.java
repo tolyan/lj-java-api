@@ -42,6 +42,8 @@ public class SQLiteWriter implements BlogEntryWriter {
     private Connection connection;
     private String journal;
     public static final String ENTRY = "entry";
+
+    //TODO refactor scheme management with reflection
     private final static String BLOG_ENTRY_SCHEME =
             ENTRY + " (" +
             BlogEntry.ITEMID + " integer PRIMARY KEY," +
@@ -50,7 +52,8 @@ public class SQLiteWriter implements BlogEntryWriter {
             BlogEntry.BODY +" string," +
             BlogEntry.DATE + " datetime," +
             BlogEntry.SUBJECT + " string, " +
-            BlogEntry.REPLY_COUNT + " integer" +
+            BlogEntry.REPLY_COUNT + " integer," +
+            BlogEntry.POSTER + " string" +
             ")";
     public static final String COMMENT = "comment" ;
     private final static String COMMENT_SCHEME = COMMENT + " (" +
@@ -71,7 +74,7 @@ public class SQLiteWriter implements BlogEntryWriter {
 
 
     private static final String INSERT_ENTRY = "INSERT into " + ENTRY +
-                                               " values(?, ?, ?, ?, ?, ?, ?);";
+                                               " values(?, ?, ?, ?, ?, ?, ?, ?);";
     private static final String INSERT_COMMENT = "INSERT into " + COMMENT +
                                                " values(?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
@@ -119,6 +122,7 @@ public class SQLiteWriter implements BlogEntryWriter {
             st.setDate(5, new java.sql.Date(entry.getDate().getTime()));
             st.setString(6, entry.getSubject());
             st.setInt(7, entry.getReply_count());
+            st.setString(8, entry.getPoster());
             st.execute();
         } catch (SQLException e) {
             logger.error("SQL Error: " + e.getMessage());

@@ -28,6 +28,7 @@
 package ru.anglerhood.lj.api.xmlrpc.results;
 
 import ru.anglerhood.lj.api.LJHelpers;
+import ru.anglerhood.lj.client.Util;
 
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
@@ -48,6 +49,7 @@ public class BlogEntry {
     public static final String DATE = "eventtime";
     public static final String SUBJECT = "subject";
     public static final String REPLY_COUNT = "reply_count";
+    public static final String POSTER = "poster";
 
 
     private int itemid;
@@ -57,6 +59,7 @@ public class BlogEntry {
     private Date date;
     private String subject;
     private Integer reply_count;
+    private String poster;
 
 
     //TODO: implement support for: props (metadata)
@@ -72,7 +75,7 @@ public class BlogEntry {
         reply_count = (Integer) map.get(REPLY_COUNT);
 //        security = SecurityType.getInstance((String) map.get("security"));
 //        allowmask = (Integer) map.get("allowmask");
-//        poster = (String) map.get("poster");
+        poster = Util.nullString((String) map.get(POSTER));
     }
 
     /**
@@ -175,6 +178,9 @@ public class BlogEntry {
         return BlogEntry.getDItemId(this.itemid, this.anum);
     }
 
+    public String getPoster() {
+        return poster;
+    }
 
     public static Integer getDItemId(int entryId, int anum) {
         return entryId * 256 + anum;
@@ -193,6 +199,7 @@ public class BlogEntry {
 //                ", poster='" + poster + '\'' +
                 '}';
     }
+
 
 
 }

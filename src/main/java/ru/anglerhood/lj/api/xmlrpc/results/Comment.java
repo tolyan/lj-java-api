@@ -42,7 +42,7 @@ import java.util.Map;
 public class Comment {
     public static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("yyyy'-'MM'-'dd' 'HH:mm:ss");
 
-    public static final String PARENTDTALKID = "parent_dtalkid";
+    public static final String PARENTDTALKID = "parentdtalkid";
     public static final String PAGES = "pages";
     public static final String DATEPOSTUNIX = "datepostunix";
     public static final String IS_LOADED = "is_loaded";

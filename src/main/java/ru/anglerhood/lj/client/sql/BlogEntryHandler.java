@@ -55,6 +55,7 @@ public class BlogEntryHandler implements ResultSetHandler {
             raw.put(BlogEntry.DATE, BlogEntry.DATEFORMAT.format(resultSet.getDate(BlogEntry.DATE)));
             raw.put(BlogEntry.SUBJECT, resultSet.getString(BlogEntry.SUBJECT));
             raw.put(BlogEntry.REPLY_COUNT, resultSet.getInt(BlogEntry.REPLY_COUNT));
+            raw.put(BlogEntry.POSTER, resultSet.getString(BlogEntry.POSTER));
             try {
                 result.add(new BlogEntry(raw));
             } catch (UnsupportedEncodingException e) {
