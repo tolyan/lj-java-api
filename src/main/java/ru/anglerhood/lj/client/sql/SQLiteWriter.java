@@ -59,7 +59,7 @@ public class SQLiteWriter implements BlogEntryWriter {
     private final static String COMMENT_SCHEME = COMMENT + " (" +
                                                                 "entryid integer, " +
                                                                 "dtalkid integer, " +
-                                                                "parent_dtalkid integer, " +
+                                                                "parentdtalkid integer, " +
                                                                 "posterid integer, " +
                                                                 "postername string, " +
                                                                 "datepostunix integer, " +

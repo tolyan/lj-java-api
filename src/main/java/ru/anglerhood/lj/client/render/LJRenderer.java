@@ -1,6 +1,9 @@
 package ru.anglerhood.lj.client.render;
 
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
+import ru.anglerhood.lj.api.xmlrpc.results.Comment;
+
+import java.util.List;
 
 /*
 * Copyright (c) 2012, Anatoly Rybalchenko
@@ -30,5 +33,6 @@ import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 */
 public interface LJRenderer {
     public String renderBlogEntry(BlogEntry entry);
-    public String renderComments(Integer entryId);
+    public String renderComments(List<Comment> comments);
+    public String renderFullEntry(BlogEntry entry, List<Comment> comments);
 }

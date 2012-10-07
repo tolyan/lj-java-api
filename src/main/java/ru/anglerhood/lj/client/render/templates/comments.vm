@@ -1,0 +1,25 @@
+#macro( process $comment )
+#set( $list = $comment.getChildren() )## dereference
+#foreach( $child in $list )
+#set( $margin = $child.getLevel()*10 )
+#set( $px = "px" )
+<div style="margin-left: $margin$px">
+$child.getBody()
+</div>
+#if( $child.getChildren())#process( $child )#end
+#end
+#end
+## call the macro on the root
+#process($root)
+
+<hr id="comment_separator">
+
+<div id="comments">
+#foreach( $comment in $commentList )
+<div>
+$comment.getBody()
+</div>
+#process( $comment )
+#end
+
+</div>

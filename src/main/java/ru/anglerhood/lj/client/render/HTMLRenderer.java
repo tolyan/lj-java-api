@@ -11,9 +11,11 @@ import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.w3c.dom.DocumentType;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
+import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 
 import javax.management.relation.RelationNotFoundException;
 import java.io.StringWriter;
+import java.util.List;
 
 /*
 * Copyright (c) 2012, Anatoly Rybalchenko
@@ -61,17 +63,7 @@ public class HTMLRenderer implements LJRenderer {
     public String renderBlogEntry(BlogEntry entry) {
         VelocityContext entryContext = new VelocityContext();
         entryContext.put("entry", entry);
-        Template template = null;
-
-        try{
-            template = ve.getTemplate("entry.vm");
-        } catch(ResourceNotFoundException e) {
-            logger.error(String.format("Coudn't find template: %s", e.getMessage()));
-        } catch(ParseErrorException e) {
-            logger.error(String.format("Cound't parse template: %s", e.getMessage()));
-        } catch(MethodInvocationException e) {
-            logger.error(String.format("Error in invocation: %s", e.getMessage()));
-        }
+        Template template = loadTemplate("full_entry.vm");
 
         StringWriter writer = new StringWriter();
         template.merge(entryContext, writer);
@@ -79,7 +71,38 @@ public class HTMLRenderer implements LJRenderer {
     }
 
     @Override
-    public String renderComments(Integer entryId) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public String renderComments(List<Comment> comments) {
+        VelocityContext commentsContext = new VelocityContext();
+        commentsContext.put("commentList", comments);
+        StringWriter writer = new StringWriter();
+        Template template = loadTemplate("comments.vm");
+        template.merge(commentsContext, writer);
+        return writer.toString();
+    }
+
+    @Override
+    public String renderFullEntry(BlogEntry entry, List<Comment> comments) {
+        VelocityContext fullContext = new VelocityContext();
+        fullContext.put("entry", entry);
+        fullContext.put("commentList", comments);
+        StringWriter writer = new StringWriter();
+        Template template = loadTemplate("full_entry.vm");
+        template.merge(fullContext, writer);
+        return writer.toString();
+
+    }
+
+    private Template loadTemplate(String template) {
+        Template result = null;
+        try{
+            result = ve.getTemplate(template);
+        } catch(ResourceNotFoundException e) {
+            logger.error(String.format("Coudn't find template: %s", e.getMessage()));
+        } catch(ParseErrorException e) {
+            logger.error(String.format("Cound't parse template: %s", e.getMessage()));
+        } catch(MethodInvocationException e) {
+            logger.error(String.format("Error in invocation: %s", e.getMessage()));
+        }
+        return result;
     }
 }
