@@ -62,6 +62,7 @@ public class Client {
     private String passwd;
 
 
+
     public Client(){
         //N.B.! IDEA starts without env variables set in bashrc/bash_profile.
         //Use bash --login to overcome this issue.
@@ -71,14 +72,20 @@ public class Client {
         if (passwd == null || passwd.isEmpty()) logger.debug("LJ_PASSWD is not set");
     }
 
+
+    public BlogEntry getBlogEntry(int entryId) {
+        return getBlogEntry(entryId, user);
+    }
+
     /**
      * Gets blog entry with specified id
      * @param entryId id of BlogEntry
      * @return BlogEntry
      */
-    public BlogEntry getBlogEntry(int entryId) {
+    public BlogEntry getBlogEntry(int entryId, String journal) {
         GetEventsArgument arg = new GetEventsArgument();
         arg.setCreds(user, passwd);
+        arg.setUsejournal(journal);
         arg.setSelecttype(GetEventsArgument.Type.ONE);
         arg.setItemid(entryId);
         BlogEntry [] entries = client.getevents(arg, TIMEOUT);
@@ -96,12 +103,13 @@ public class Client {
      * @return an array of blog entries
      * @see ru.anglerhood.lj.api.xmlrpc.results.BlogEntry
      */
-    public BlogEntry[] getBlogEntriesOn(Date date) {
+    public BlogEntry[] getBlogEntriesOn(Date date, String journal) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
 
         GetEventsArgument argument = new GetEventsArgument();
         argument.setCreds(user, passwd);
+        argument.setUsejournal(journal);
         argument.setSelecttype(GetEventsArgument.Type.DAY);
         argument.setYear(calendar.get(Calendar.YEAR));
         argument.setMonth(calendar.get(Calendar.MONTH) + 1);
@@ -110,6 +118,10 @@ public class Client {
     }
 
 
+    public List<Comment> getComments(int entryId, int anum) {
+        return getComments(entryId, anum, user);
+    }
+
     /**
      * Gets comments collection for specified blog entry
      * @param entryId id of BlogEntry
@@ -117,13 +129,13 @@ public class Client {
      * @return List of Comments
      */
 
-    public List<Comment> getComments(int entryId, int anum) {
+    public List<Comment> getComments(int entryId, int anum, String journal) {
         GetCommentsArgument arg = new GetCommentsArgument();
         arg.setCreds(user, passwd);
         arg.setDItemId(entryId, anum);
         arg.setExpandStrategy("expand_all");
         arg.setLineEndings("unix");
-        arg.setJournal(user);
+        arg.setJournal(journal);
         return client.getcomments(arg, TIMEOUT);
     }
 
@@ -132,16 +144,15 @@ public class Client {
      * @param entry  BlogEntry
      * @return List of Comments
      */
-    public List<Comment> getComments(BlogEntry entry) {
-        return getComments(entry.getItemid(), entry.getAnum());
+    public List<Comment> getComments(BlogEntry entry, String journal) {
+        return getComments(entry.getItemid(), entry.getAnum(), journal);
     }
 
-    public void storeFullEntry(int entryId, Class writerClass) {
+    public void storeFullEntry( String journal, BlogEntry entry, Class writerClass) {
         try {
-            BlogEntry entry = getBlogEntry(entryId);
-            List<Comment> comments = getComments(entry);
+            List<Comment> comments = getComments(entry, journal);
             Constructor<BlogEntryWriter> ctor = writerClass.getConstructor(String.class);
-            writer = ctor.newInstance(user);
+            writer = ctor.newInstance(journal);
             writer.write(entry);
             writer.write(comments);
 
@@ -172,6 +183,8 @@ public class Client {
             logger.error("Error while invocing constructor for " + writerClass.getName());
         }  
     }
+
+
 
     /**
      * Retrieves the number of journal entries per day.
@@ -204,13 +217,24 @@ public class Client {
         storeJournal(user);
     }
 
+    public void scrapJournal(String journalName) {
+        BlogEntry lastEntry = getBlogEntry(-1, journalName);
+        storeFullEntry(journalName, lastEntry, SQLiteWriter.class);
+        for(int id = lastEntry.getItemid(); id >= 1; id--) {
+            BlogEntry entry = getBlogEntry(id, journalName);
+            if(null == entry) continue;;
+            storeFullEntry(journalName, entry, SQLiteWriter.class );
+        }
+    }
+
     public void storeJournal(String journalName) {
-        DayCount [] counts = getDayCounts();
+        DayCount [] counts = getDayCounts(journalName);
         for(DayCount count : counts) {
             Date date = count.getDate();
-            BlogEntry [] entries = getBlogEntriesOn(date);
+            BlogEntry [] entries = getBlogEntriesOn(date, journalName);
             for (BlogEntry entry : entries) {
-                storeFullEntry(entry.getItemid(), SQLiteWriter.class);
+                logger.debug(String.format("Writing entry: %s", entry.getItemid()));
+                storeFullEntry(journalName, entry, SQLiteWriter.class);
             }
         }
 

@@ -16,19 +16,20 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 
 public class EntryPoint {
+
+    private static final String JOURNAL_NAME = "metapractice";
+
     public static void main(String[] args) throws ClassNotFoundException, IOException {
         BasicConfigurator.configure();
         System.out.println(String.format("running in %s mode", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java"));
 //        Client client = new Client();
-//        List<Comment> comments = client.getComments(client.getBlogEntry(1));
-//        client.initWriter("client_test_api" , SQLiteWriter.class);
-//        client.storeJournal();
+//        client.initWriter(JOURNAL_NAME , SQLiteWriter.class);
+//        client.scrapJournal(JOURNAL_NAME);
 
-        BlogEntryReader reader = new SQLiteReader("client_test_api");
-        BlogEntry entry = reader.readEntry(1);
-//
+        BlogEntryReader reader = new SQLiteReader(JOURNAL_NAME);
+        BlogEntry entry = reader.readEntry(1323);
+////
         LJRenderer renderer = new HTMLRenderer();
-//        System.out.println(renderer.renderBlogEntry(entry));
         List<Comment> comments2 = reader.readComments(entry.getItemid());
         String output = renderer.renderFullEntry(entry, comments2);
         FileWriter writer = new FileWriter("post.html");
