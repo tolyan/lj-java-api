@@ -141,6 +141,11 @@ public class Comment {
         return datePostUnix;
     }
 
+    public Date getDate() {
+        return new Date(datePostUnix.longValue() * 1000);
+    }
+
+
     public Integer getLoaded() {
         return isLoaded;
     }
@@ -163,7 +168,7 @@ public class Comment {
 
     public String getSubject() {
         if (subject == null)
-            return "";
+            return "subject ";
         else
             return subject;
     }

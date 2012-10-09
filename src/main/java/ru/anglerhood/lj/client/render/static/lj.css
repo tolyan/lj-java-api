@@ -1,0 +1,53 @@
+/* blog entry format and style */
+div#author {
+    color: #404040;
+    font-size: small;
+}
+
+div.entry {
+    font: 14px/1.4 Arial, sans-serif;
+}
+
+div.entrySubj {
+    color: black;
+    font-weight: bold;
+
+}
+
+div.entryBody {
+    color: #404040;
+    display: block;
+}
+
+/* comments format and style */
+
+div.commentsList {
+    background-color:#eaf7ff;
+    font-family: Verdana, Arial, Hevletica, sans-serif;
+}
+
+/* comment HEADER */
+div.commentHeader {
+    padding: 10px 0 5px 12px;
+    background-color:#b0c4de;
+
+    font-size: 12px;
+}
+
+div.commentPoster {
+    color: #0000ff;
+}
+
+div.commentDate {
+    color: #333355;
+}
+
+/* comment BODY */
+
+div.commentBody {
+   padding: 5px 0 10px 10px;
+}
+
+
+
+

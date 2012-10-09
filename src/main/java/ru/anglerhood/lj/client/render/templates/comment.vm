@@ -1,0 +1,17 @@
+
+<div class="commentFull" style="margin-left: $margin$px">
+    <div class="commentHeader">
+        <div class="commentPoster">
+            $child.getPostername()
+        </div>
+        <div class="commentDate">
+            $child.getDate()
+        </div>
+        <div class="commentSubj">
+            <b>Subject: $child.getSubject()</b>
+        </div>
+    </div>
+    <div class="commentBody">
+        $child.getBody()
+    </div>
+</div>

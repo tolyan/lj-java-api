@@ -1,14 +1,17 @@
 <head>
+    <link rel="stylesheet" type="text/css" href="lj.css" />
     <title>$entry.getSubject()</title>
 </head>
 <body>
-<div id="author" align="left">
-    $entry.getPoster() wrote, <br>
-    $entry.getDate()
-</div>
-<div id="subj">
-    <h1>$entry.getSubject()</h1>
-</div>
-<div id="body">
-    $entry.getBody()
+<div class="entry">
+    <div id="author" class="author">
+        $entry.getPoster() wrote, <br>
+        $entry.getDate()
+    </div>
+    <div class="entrySubj" id="subj">
+        <h1>$entry.getSubject()</h1>
+    </div>
+    <div class="entryBody" id="body">
+        $entry.getBody()
+    </div>
 </div>
