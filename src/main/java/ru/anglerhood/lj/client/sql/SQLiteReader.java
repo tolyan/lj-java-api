@@ -43,8 +43,10 @@ public class SQLiteReader implements BlogEntryReader {
     private Connection connection;
     private String journal;
     private QueryRunner runner = new QueryRunner();
+    private List<Integer> ids;
+    private Iterator<Integer> it;
 
-
+    private static final String SELECT_ALL_ENTRY_IDS = String.format("SELECT %s from %s;", BlogEntry.ITEMID, SQLiteWriter.ENTRY);
     private static final String SELECT_ENTRY = "SELECT * from " + SQLiteWriter.ENTRY +
                                             " where " + BlogEntry.ITEMID + " = ?;";
 
@@ -56,6 +58,21 @@ public class SQLiteReader implements BlogEntryReader {
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + journal + ".db");
+
+            ResultSetHandler<List<Integer>> handler = new ResultSetHandler() {
+                @Override
+                public Object handle(ResultSet resultSet) throws SQLException {
+                    List<Integer> result = new LinkedList<Integer>();
+                    while(resultSet.next()) {
+                        result.add(resultSet.getInt(BlogEntry.ITEMID));
+                    }
+                    return result;
+                }
+            };
+            ids = runner.query(connection, SELECT_ALL_ENTRY_IDS, handler);
+            it = ids.iterator();
+
+
         } catch (ClassNotFoundException e) {
             logger.error("Could find JDBC driver for SQLite! " + e.getMessage());
         } catch (SQLException e) {
@@ -129,6 +146,19 @@ public class SQLiteReader implements BlogEntryReader {
         }
         result.addAll(levels.get(levels.firstKey()));
         return result;
+    }
+
+
+
+    @Override
+    public boolean hasNext(){
+        return it.hasNext();
+    }
+
+    @Override
+    public BlogEntry next(){
+        Integer id = it.next();
+        return readEntry(id);
     }
 
 }

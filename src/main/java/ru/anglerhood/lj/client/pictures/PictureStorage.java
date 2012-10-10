@@ -2,7 +2,6 @@ package ru.anglerhood.lj.client.pictures;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import ru.anglerhood.lj.api.LJHelpers;
 import sun.misc.IOUtils;
 
@@ -45,9 +44,15 @@ import java.util.Iterator;
 */
 public class PictureStorage {
     private static Log logger = LogFactory.getLog(PictureStorage.class);
+
+    /**
+     * Downloads picture from  URL, detects format and stores on filesystem under the name of MD5 hashsum.
+      * @param url
+     * @throws IOException
+     */
     public void storePicture(URL url) throws IOException {
         byte [] image = bufferImage(url);
-        String filename = getFilename(image);
+        String filename = getFilename(image, url);
         filename = filename.toLowerCase();
         logger.debug(String.format("Writing %s file", filename));
         org.apache.commons.io.IOUtils.write(image, new FileOutputStream(new File(filename)));
@@ -70,7 +75,7 @@ public class PictureStorage {
         return result;
     }
 
-    private String getFilename(byte [] image) throws IOException {
+    private String getFilename(byte [] image, URL url) throws IOException {
         ImageInputStream imageStream = new MemoryCacheImageInputStream(new ByteArrayInputStream(image));
         Iterator<ImageReader> it = ImageIO.getImageReaders(imageStream);
         String format = "";
@@ -80,7 +85,10 @@ public class PictureStorage {
             logger.debug(String.format("Found picture with %s format", format));
         }
 
-        if (format.equals("")) format = "unknown";
+        if (format.equals("")){
+            logger.warn(String.format("Got picture of unknown format from URL: %s", url.toString()));
+            format = "unknown";
+        }
 
         String hashType = "MD5";
         String hash = "";

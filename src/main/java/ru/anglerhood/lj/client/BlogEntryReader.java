@@ -37,4 +37,7 @@ public interface BlogEntryReader {
     public BlogEntry readEntry(int entryId);
     public List<Comment> readComments(int entryId);
 
+    boolean hasNext();
+
+    BlogEntry next();
 }

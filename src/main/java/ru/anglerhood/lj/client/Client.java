@@ -28,6 +28,7 @@
 
 package ru.anglerhood.lj.client;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import ru.anglerhood.lj.api.XMLRPCClient;
@@ -38,8 +39,13 @@ import ru.anglerhood.lj.api.xmlrpc.arguments.GetEventsArgument;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 import ru.anglerhood.lj.api.xmlrpc.results.DayCount;
+import ru.anglerhood.lj.client.render.HTMLRenderer;
+import ru.anglerhood.lj.client.render.LJRenderer;
+import ru.anglerhood.lj.client.sql.SQLiteReader;
 import ru.anglerhood.lj.client.sql.SQLiteWriter;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
@@ -237,6 +243,38 @@ public class Client {
                 storeFullEntry(journalName, entry, SQLiteWriter.class);
             }
         }
+
+    }
+
+    public void renderJournal(String journaName) {
+        logger.debug(String.format("Started render of journal: %s", journaName));
+        String dir;
+        try {
+            FileUtils.forceMkdir(new File(journaName));
+            logger.debug(String.format("Created directory %s", journaName));
+            FileUtils.copyFile(new File("src/main/java/ru/anglerhood/lj/client/render/static/lj.css"), new File(journaName + "/lj.css"));
+            dir = journaName;
+        } catch (IOException e) {
+            logger.error(String.format("Couldn't create directory %s, %s", journaName, e.getMessage()));
+            throw new RuntimeException(e);
+        }
+        BlogEntryReader reader = new SQLiteReader(journaName);
+        while(reader.hasNext()){
+            BlogEntry entry = reader.next();
+            LJRenderer renderer = new HTMLRenderer();
+            List<Comment> comments = reader.readComments(entry.getItemid());
+            String output = renderer.renderFullEntry(entry, comments);
+            String filename = dir + "/" + String.valueOf(entry.getItemid()) + ".html";
+            try {
+                logger.debug(String.format("Writing file %s: ", filename));
+                FileUtils.writeStringToFile(new File(filename), output);
+            } catch (IOException e) {
+                logger.error(String.format("Couldn't write file %s, %s", filename, e.getMessage()));
+            }
+        }
+
+        logger.debug(String.format("Ended render of journal: %s", journaName));
+
 
     }
 

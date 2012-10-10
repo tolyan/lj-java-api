@@ -55,6 +55,7 @@ public class HTMLRenderer implements LJRenderer {
         ve.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
         ve.setProperty("file.resource.loader.path","./src/main/java/ru/anglerhood/lj/client/render/templates");
         ve.setProperty("file.resource.loader.cache", "true");
+        ve.setProperty("velocimacro.max.depth", "200");
         ve.init();
     }
 
