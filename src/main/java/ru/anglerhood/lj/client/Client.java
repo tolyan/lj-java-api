@@ -47,11 +47,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 /**
@@ -73,6 +73,7 @@ public class Client {
     private final ExecutorService pool;
     private int threadNumber;
     private String journal;
+    private int commentCounter;
 
 
     public Client(Class writerClass, String journal){
@@ -174,11 +175,12 @@ public class Client {
         return getComments(entry.getItemid(), entry.getAnum());
     }
 
-    public void storeFullEntry(BlogEntry entry) {
+    public boolean storeFullEntry(BlogEntry entry) {
         List<Comment> comments = getComments(entry);
         writer.write(entry);
         writer.write(comments);
         logger.debug(String.format("Stored entry %s", entry.getItemid()));
+        return true;
     }
 
     
@@ -218,11 +220,36 @@ public class Client {
 
 
     public void scrapJournal() {
+        long time = System.nanoTime();
+        int okayTasks = 0;
+
+        ArrayList<Callable<Boolean>> todo = new ArrayList<Callable<Boolean>>();
+
         BlogEntry lastEntry = getBlogEntry(-1, journal);
         for(int id = lastEntry.getItemid(); id >= 1; id--) {
-            pool.execute(new Scrapper(id));
+            todo.add(new Scrapper(id));
+        }
+        try {
+            List<Future<Boolean>> results = pool.invokeAll(todo);
+
+            for(Future<Boolean> result : results) {
+                try {
+                    if (result.get()){
+                        okayTasks++;
+                    }
+                } catch (ExecutionException e) {
+                    logger.error(String.format("Error while getting result of scrapping task %s", e.getMessage()));
+                }
+            }
+            logger.debug(String.format("Executed %s scrapping tasks and stored %s entries", results.size(), okayTasks));
+        } catch (InterruptedException e) {
+            logger.error(String.format("Execution of scrapJournal interrupted, %s", e.getMessage()));
         }
         pool.shutdown();
+        writer.shutdown();
+
+        logger.debug(String.format("Stored journal with %s entries and %s comments for %s milliseconds",
+                                    okayTasks, commentCounter, (System.nanoTime() - time)/1000000L));
     }
 
     public void storeJournal() {
@@ -273,7 +300,7 @@ public class Client {
         return user;
     }
 
-    private class Scrapper implements Runnable {
+    private class Scrapper implements Callable<Boolean> {
 
         private final int entryId;
 
@@ -283,11 +310,12 @@ public class Client {
         }
 
         @Override
-        public void run() {
+        public Boolean call() throws Exception {
             logger.debug(String.format("Running Scrapper thread #%s",threadNumber++));
             BlogEntry entry = getBlogEntry(entryId, journal);
-            if(null == entry) return;
-            storeFullEntry(entry);
+            if(null == entry) return false;
+            commentCounter = commentCounter + entry.getReply_count();
+            return storeFullEntry(entry);
         }
     }
 

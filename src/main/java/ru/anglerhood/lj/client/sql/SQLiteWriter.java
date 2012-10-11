@@ -88,6 +88,7 @@ public class SQLiteWriter implements BlogEntryWriter {
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + journal + ".db");
+            connection.setAutoCommit(false);
         } catch (ClassNotFoundException e) {
             logger.error("Could find JDBC driver for SQLite! " + e.getMessage());
         } catch (SQLException e) {
@@ -158,7 +159,7 @@ public class SQLiteWriter implements BlogEntryWriter {
     }
 
     @Override
-    public void write(List<Comment> comments) {
+    public synchronized void write(List<Comment> comments) {
         long time = System.nanoTime();
         List<Object[]> params = new ArrayList<Object[]>();
         makeBatchParams(comments, params);
@@ -180,7 +181,16 @@ public class SQLiteWriter implements BlogEntryWriter {
         } catch (SQLException e) {
             logger.error(String.format("Could execute batch INSERT, %s", e.getMessage()));
         }
-        logger.debug(String.format("Wrote %s INSERT queries in %s millis", sum, (System.nanoTime() - time)/1000000L));
+        logger.debug(String.format("Wrote %s INSERT queries in %s microseconds", sum, (System.nanoTime() - time)/1000L));
+    }
+
+    public void shutdown(){
+        try {
+            connection.commit();
+            connection.close();
+        } catch (SQLException e) {
+            logger.error(String.format("Couldn't commit session, %s", e.getMessage()));
+        }
     }
 
     private void makeBatchParams(List<Comment> comments, List<Object []> acc){

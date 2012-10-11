@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class EntryPoint {
 
-    private static final String JOURNAL_NAME = "client_test_api";
+    private static final String JOURNAL_NAME = "anglerhood";
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchAlgorithmException {
         BasicConfigurator.configure();
