@@ -280,10 +280,10 @@ public class Client {
         BlogEntryReader reader = new SQLiteReader(journal);
         while(reader.hasNext()){
             BlogEntry entry = reader.next();
-            LJRenderer renderer = new HTMLRenderer();
+            LJRenderer renderer = new HTMLRenderer(journal, reader);
             List<Comment> comments = reader.readComments(entry.getItemid());
             String output = renderer.renderFullEntry(entry, comments);
-            String filename = dir + "/" + String.valueOf(entry.getItemid()) + ".html";
+            String filename = dir + "/" + String.valueOf(entry.getPermalink().replaceAll("#/", ""));
             try {
                 logger.debug(String.format("Writing file %s: ", filename));
                 FileUtils.writeStringToFile(new File(filename), output);

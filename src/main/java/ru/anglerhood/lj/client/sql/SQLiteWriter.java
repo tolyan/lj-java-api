@@ -57,8 +57,9 @@ public class SQLiteWriter implements BlogEntryWriter {
             BlogEntry.BODY +" string," +
             BlogEntry.DATE + " datetime," +
             BlogEntry.SUBJECT + " string, " +
-            BlogEntry.REPLY_COUNT + " integer," +
-            BlogEntry.POSTER + " string" +
+            BlogEntry.REPLY_COUNT + " integer, " +
+            BlogEntry.POSTER + " string, " +
+            BlogEntry.JOURNAL + " string" +
             ")";
     public static final String COMMENT = "comment" ;
     private final static String COMMENT_SCHEME = COMMENT + " (" +
@@ -79,7 +80,7 @@ public class SQLiteWriter implements BlogEntryWriter {
 
 
     private static final String INSERT_ENTRY = "INSERT into " + ENTRY +
-                                               " values(?, ?, ?, ?, ?, ?, ?, ?);";
+                                               " values(?, ?, ?, ?, ?, ?, ?, ?, ?);";
     private static final String INSERT_COMMENT = "INSERT into " + COMMENT +
                                                " values(?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
@@ -129,6 +130,7 @@ public class SQLiteWriter implements BlogEntryWriter {
             st.setString(6, entry.getSubject());
             st.setInt(7, entry.getReply_count());
             st.setString(8, entry.getPoster());
+            st.setString(9, entry.getJournal());
             st.execute();
         } catch (SQLException e) {
             logger.error("SQL Error: " + e.getMessage());

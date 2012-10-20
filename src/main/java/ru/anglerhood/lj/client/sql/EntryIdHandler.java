@@ -1,4 +1,9 @@
-package ru.anglerhood.lj.client;
+package ru.anglerhood.lj.client.sql;
+
+import org.apache.commons.dbutils.ResultSetHandler;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /*
 * Copyright (c) 2012, Anatoly Rybalchenko
@@ -27,19 +32,14 @@ package ru.anglerhood.lj.client;
 * THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
-import ru.anglerhood.lj.api.xmlrpc.results.Comment;
+public class EntryIdHandler implements ResultSetHandler {
+    @Override
+    public Object handle(ResultSet resultSet) throws SQLException {
+        Integer result = null;
+        while(resultSet.next()) {
+            result = resultSet.getInt(1);
+        }
+        return result;
+    }
 
-import java.util.List;
-
-public interface BlogEntryReader {
-
-    public BlogEntry readEntry(int entryId);
-    public List<Comment> readComments(int entryId);
-
-    public BlogEntry getPreviousEntry(int entryId);
-    public BlogEntry getNextEntry(int entryId);
-
-    boolean hasNext();
-    BlogEntry next();
 }
