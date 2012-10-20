@@ -56,8 +56,9 @@ public class BlogEntryHandler implements ResultSetHandler {
             raw.put(BlogEntry.SUBJECT, resultSet.getString(BlogEntry.SUBJECT));
             raw.put(BlogEntry.REPLY_COUNT, resultSet.getInt(BlogEntry.REPLY_COUNT));
             raw.put(BlogEntry.POSTER, resultSet.getString(BlogEntry.POSTER));
+            String journal = resultSet.getString(BlogEntry.JOURNAL);
             try {
-                result.add(new BlogEntry(raw));
+                result.add(new BlogEntry(raw, journal));
             } catch (UnsupportedEncodingException e) {
                 logger.error(String.format("Blog entry %s contains text in unsupported encoding, %s", resultSet.getInt(BlogEntry.ITEMID), e.getMessage()));
             } catch (ParseException e) {

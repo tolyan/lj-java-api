@@ -42,15 +42,16 @@ import ru.anglerhood.lj.api.xmlrpc.results.DayCount;
 import ru.anglerhood.lj.client.render.HTMLRenderer;
 import ru.anglerhood.lj.client.render.LJRenderer;
 import ru.anglerhood.lj.client.sql.SQLiteReader;
-import ru.anglerhood.lj.client.sql.SQLiteWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.*;
 
 
 /**
@@ -58,24 +59,51 @@ import java.util.List;
  */
 
 public class Client {
+    private static final int THREADS_POOL_SIZE = 25;
     private final XMLRPCClient client = new XMLRPCClientImpl();
-    private BlogEntryWriter writer;
+    private final BlogEntryWriter writer;
 
     private Log logger = LogFactory.getLog(Client.class);
     private static final int TIMEOUT = 0;
 
     private String user;
     private String passwd;
+    private Constructor<BlogEntryWriter> writerClassConstructor;
+
+    private final ExecutorService pool;
+    private int threadNumber;
+    private String journal;
+    private int commentCounter;
 
 
-
-    public Client(){
+    public Client(Class writerClass, String journal){
         //N.B.! IDEA starts without env variables set in bashrc/bash_profile.
         //Use bash --login to overcome this issue.
+        this.journal = journal;
+
         user = System.getenv("LJ_USER");
         passwd = System.getenv("LJ_PASSWD");
         if (user == null || user.isEmpty()) logger.debug("LJ_USER is not set");
         if (passwd == null || passwd.isEmpty()) logger.debug("LJ_PASSWD is not set");
+
+        try {
+            writerClassConstructor = writerClass.getConstructor(String.class);
+            writer = writerClassConstructor.newInstance(this.journal);
+        }  catch (NoSuchMethodException e) {
+            logger.error("Constructor is not defined for " + writerClass.getName());
+            throw new RuntimeException("Couldn't initate writer");
+        } catch (InstantiationException e) {
+            logger.error("Could not instatiate class " + writerClassConstructor.getName());
+            throw new RuntimeException("Couldn't initate writer");
+        } catch (IllegalAccessException e) {
+            logger.error("Illegal access to class " + writerClassConstructor.getName());
+            throw new RuntimeException("Couldn't initate writer");
+        } catch (InvocationTargetException e) {
+            logger.error("Error while invocing constructor for " + writerClassConstructor.getName());
+            throw new RuntimeException("Couldn't initate writer");
+        }
+
+        pool = Executors.newFixedThreadPool(THREADS_POOL_SIZE);
     }
 
 
@@ -124,9 +152,7 @@ public class Client {
     }
 
 
-    public List<Comment> getComments(int entryId, int anum) {
-        return getComments(entryId, anum, user);
-    }
+
 
     /**
      * Gets comments collection for specified blog entry
@@ -135,7 +161,7 @@ public class Client {
      * @return List of Comments
      */
 
-    public List<Comment> getComments(int entryId, int anum, String journal) {
+    public List<Comment> getComments(int entryId, int anum) {
         GetCommentsArgument arg = new GetCommentsArgument();
         arg.setCreds(user, passwd);
         arg.setDItemId(entryId, anum);
@@ -145,49 +171,22 @@ public class Client {
         return client.getcomments(arg, TIMEOUT);
     }
 
-    /**
-     * Gets comments collection for specified blog entry
-     * @param entry  BlogEntry
-     * @return List of Comments
-     */
-    public List<Comment> getComments(BlogEntry entry, String journal) {
-        return getComments(entry.getItemid(), entry.getAnum(), journal);
+    public List<Comment> getComments(BlogEntry entry) {
+        return getComments(entry.getItemid(), entry.getAnum());
     }
 
-    public void storeFullEntry( String journal, BlogEntry entry, Class writerClass) {
-        try {
-            List<Comment> comments = getComments(entry, journal);
-            Constructor<BlogEntryWriter> ctor = writerClass.getConstructor(String.class);
-            writer = ctor.newInstance(journal);
-            writer.write(entry);
-            writer.write(comments);
-
-        } catch (InstantiationException e) {
-            logger.error("Could not instatiate class " + writerClass.getName());
-        } catch (IllegalAccessException e) {
-            logger.error("Illegal access to class " + writerClass.getName());
-        } catch (NoSuchMethodException e) {
-            logger.error("Constructor is not defined for " + writerClass.getName());
-        } catch (InvocationTargetException e) {
-           logger.error("Error while invocing constructor for " + writerClass.getName());
-        }
-
+    public boolean storeFullEntry(BlogEntry entry) {
+        List<Comment> comments = getComments(entry);
+        writer.write(entry);
+        writer.write(comments);
+        logger.debug(String.format("Stored entry %s", entry.getItemid()));
+        return true;
     }
+
     
-    public void initWriter(String journal, Class writerClass) {
-        try {
-            Constructor<BlogEntryWriter> ctor = writerClass.getConstructor(String.class);
-            writer = ctor.newInstance(journal);
-            writer.init();
-        } catch (InstantiationException e) {
-            logger.error("Could not instatiate class " + writerClass.getName());
-        } catch (IllegalAccessException e) {
-            logger.error("Illegal access to class " + writerClass.getName());
-        } catch (NoSuchMethodException e) {
-            logger.error("Constructor is not defined for " + writerClass.getName());
-        } catch (InvocationTargetException e) {
-            logger.error("Error while invocing constructor for " + writerClass.getName());
-        }  
+    public void initWriter() {
+        writer.init();
+        logger.debug(String.format("Inited writer for %s", journal));
     }
 
 
@@ -219,52 +218,72 @@ public class Client {
         return client.getdaycounts(argument, TIMEOUT);
     }
 
-    public void storeJournal() {
-        storeJournal(user);
-    }
 
-    public void scrapJournal(String journalName) {
-        BlogEntry lastEntry = getBlogEntry(-1, journalName);
-        storeFullEntry(journalName, lastEntry, SQLiteWriter.class);
+    public void scrapJournal() {
+        long time = System.nanoTime();
+        int okayTasks = 0;
+
+        ArrayList<Callable<Boolean>> todo = new ArrayList<Callable<Boolean>>();
+
+        BlogEntry lastEntry = getBlogEntry(-1, journal);
         for(int id = lastEntry.getItemid(); id >= 1; id--) {
-            BlogEntry entry = getBlogEntry(id, journalName);
-            if(null == entry) continue;;
-            storeFullEntry(journalName, entry, SQLiteWriter.class );
+            todo.add(new Scrapper(id));
         }
+        try {
+            List<Future<Boolean>> results = pool.invokeAll(todo);
+
+            for(Future<Boolean> result : results) {
+                try {
+                    if (result.get()){
+                        okayTasks++;
+                    }
+                } catch (ExecutionException e) {
+                    logger.error(String.format("Error while getting result of scrapping task %s", e.getMessage()));
+                }
+            }
+            logger.debug(String.format("Executed %s scrapping tasks and stored %s entries", results.size(), okayTasks));
+        } catch (InterruptedException e) {
+            logger.error(String.format("Execution of scrapJournal interrupted, %s", e.getMessage()));
+        }
+        pool.shutdown();
+        writer.shutdown();
+
+        logger.debug(String.format("Stored journal with %s entries and %s comments for %s milliseconds",
+                                    okayTasks, commentCounter, (System.nanoTime() - time)/1000000L));
     }
 
-    public void storeJournal(String journalName) {
-        DayCount [] counts = getDayCounts(journalName);
+    public void storeJournal() {
+        DayCount [] counts = getDayCounts(journal);
         for(DayCount count : counts) {
             Date date = count.getDate();
-            BlogEntry [] entries = getBlogEntriesOn(date, journalName);
+            BlogEntry [] entries = getBlogEntriesOn(date, journal);
             for (BlogEntry entry : entries) {
                 logger.debug(String.format("Writing entry: %s", entry.getItemid()));
-                storeFullEntry(journalName, entry, SQLiteWriter.class);
+                storeFullEntry(entry);
             }
         }
 
     }
 
-    public void renderJournal(String journaName) {
-        logger.debug(String.format("Started render of journal: %s", journaName));
+    public void renderJournal() {
+        logger.debug(String.format("Started render of journal: %s", journal));
         String dir;
         try {
-            FileUtils.forceMkdir(new File(journaName));
-            logger.debug(String.format("Created directory %s", journaName));
-            FileUtils.copyFile(new File("src/main/java/ru/anglerhood/lj/client/render/static/lj.css"), new File(journaName + "/lj.css"));
-            dir = journaName;
+            FileUtils.forceMkdir(new File(journal));
+            logger.debug(String.format("Created directory %s", journal));
+            FileUtils.copyFile(new File("src/main/java/ru/anglerhood/lj/client/render/static/lj.css"), new File(journal + "/lj.css"));
+            dir = journal;
         } catch (IOException e) {
-            logger.error(String.format("Couldn't create directory %s, %s", journaName, e.getMessage()));
+            logger.error(String.format("Couldn't create directory %s, %s", journal, e.getMessage()));
             throw new RuntimeException(e);
         }
-        BlogEntryReader reader = new SQLiteReader(journaName);
+        BlogEntryReader reader = new SQLiteReader(journal);
         while(reader.hasNext()){
             BlogEntry entry = reader.next();
-            LJRenderer renderer = new HTMLRenderer();
+            LJRenderer renderer = new HTMLRenderer(journal, reader);
             List<Comment> comments = reader.readComments(entry.getItemid());
             String output = renderer.renderFullEntry(entry, comments);
-            String filename = dir + "/" + String.valueOf(entry.getItemid()) + ".html";
+            String filename = dir + "/" + String.valueOf(entry.getPermalink().replaceAll("#/", ""));
             try {
                 logger.debug(String.format("Writing file %s: ", filename));
                 FileUtils.writeStringToFile(new File(filename), output);
@@ -273,13 +292,31 @@ public class Client {
             }
         }
 
-        logger.debug(String.format("Ended render of journal: %s", journaName));
-
+        logger.debug(String.format("Ended render of journal: %s", journal));
 
     }
 
     public String getUser() {
         return user;
+    }
+
+    private class Scrapper implements Callable<Boolean> {
+
+        private final int entryId;
+
+        Scrapper(int entryId){
+            this.entryId = entryId;
+
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            logger.debug(String.format("Running Scrapper thread #%s",threadNumber++));
+            BlogEntry entry = getBlogEntry(entryId, journal);
+            if(null == entry) return false;
+            commentCounter = commentCounter + entry.getReply_count();
+            return storeFullEntry(entry);
+        }
     }
 
 

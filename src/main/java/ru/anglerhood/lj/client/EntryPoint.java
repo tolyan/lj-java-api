@@ -2,10 +2,11 @@ package ru.anglerhood.lj.client;
 
 import org.apache.log4j.BasicConfigurator;
 import org.sqlite.SQLiteJDBCLoader;
-import ru.anglerhood.lj.client.pictures.PictureStorage;
+import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
+import ru.anglerhood.lj.client.sql.SQLiteReader;
+import ru.anglerhood.lj.client.sql.SQLiteWriter;
 
 import java.io.IOException;
-import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 
 public class EntryPoint {
@@ -15,14 +16,12 @@ public class EntryPoint {
     public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchAlgorithmException {
         BasicConfigurator.configure();
         System.out.println(String.format("running in %s mode", SQLiteJDBCLoader.isNativeMode() ? "native" : "pure-java"));
-        Client client = new Client();
-//        client.initWriter(JOURNAL_NAME , SQLiteWriter.class);
-//        client.scrapJournal(JOURNAL_NAME);
+        Client client = new Client(SQLiteWriter.class, JOURNAL_NAME);
+//        client.initWriter();
+//        client.scrapJournal();
 //
-//        BlogEntryReader reader = new SQLiteReader(JOURNAL_NAME);
-//        BlogEntry entry = reader.readEntry(1323);
-//////
-        client.renderJournal(JOURNAL_NAME);
+        BlogEntryReader reader = new SQLiteReader(JOURNAL_NAME);
+        client.renderJournal();
 
 
 //        PictureStorage storage = new PictureStorage();

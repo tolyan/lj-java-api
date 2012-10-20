@@ -48,6 +48,9 @@ public interface BlogEntryWriter {
     public void write(List<Comment> comments);
     public void init();
 
-
+    /**
+     * Write should flush all buffers and caches on persistent storage upon this request
+     */
+    void shutdown();
 }
 

@@ -4,16 +4,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
-import org.w3c.dom.DocumentType;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
 import ru.anglerhood.lj.api.xmlrpc.results.Comment;
+import ru.anglerhood.lj.client.BlogEntryReader;
+import ru.anglerhood.lj.client.Util;
 
-import javax.management.relation.RelationNotFoundException;
 import java.io.StringWriter;
 import java.util.List;
 
@@ -48,8 +47,13 @@ public class HTMLRenderer implements LJRenderer {
 
     private static final String DOCTYPE = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN http://www.w3.org/TR/html4/loose.dtd\">";
     private final VelocityEngine ve;
+    private String journal;
+    private BlogEntryReader reader;
 
-    public HTMLRenderer(){
+
+    public HTMLRenderer(String journal, BlogEntryReader reader){
+        this.journal = journal;
+        this.reader = reader;
         ve = new VelocityEngine();
         ve.setProperty("resource.loader", "file");
         ve.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
@@ -64,11 +68,23 @@ public class HTMLRenderer implements LJRenderer {
     public String renderBlogEntry(BlogEntry entry) {
         VelocityContext entryContext = new VelocityContext();
         entryContext.put("entry", entry);
-        Template template = loadTemplate("full_entry.vm");
+        BlogEntry prev = reader.getPreviousEntry(entry.getItemid());
+        String prevURL = "";
+        if(null != prev) {
+            prevURL = prev.getPermalink().substring(2);
+        }
+        entryContext.put("prevURL", prevURL);
 
+        BlogEntry next = reader.getNextEntry(entry.getItemid());
+        String nextURL = "";
+        if(null != next) {
+            nextURL = next.getPermalink().substring(2);
+        }
+        entryContext.put("nextURL", nextURL);
+        Template template = loadTemplate("blog_entry.vm");
         StringWriter writer = new StringWriter();
         template.merge(entryContext, writer);
-        return writer.toString();
+        return Util.replaceJournalLinks(writer.toString(), journal);
     }
 
     @Override
@@ -78,18 +94,21 @@ public class HTMLRenderer implements LJRenderer {
         StringWriter writer = new StringWriter();
         Template template = loadTemplate("comments.vm");
         template.merge(commentsContext, writer);
-        return writer.toString();
+        return Util.replaceJournalLinks(writer.toString(), journal);
     }
 
     @Override
     public String renderFullEntry(BlogEntry entry, List<Comment> comments) {
-        VelocityContext fullContext = new VelocityContext();
-        fullContext.put("entry", entry);
-        fullContext.put("commentList", comments);
-        StringWriter writer = new StringWriter();
-        Template template = loadTemplate("full_entry.vm");
-        template.merge(fullContext, writer);
-        return writer.toString();
+        StringBuilder result = new StringBuilder();
+        result.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n" +
+                "        \"http://www.w3.org/TR/html4/loose.dtd\">\n" +
+                "<html>");
+        result.append(renderBlogEntry(entry));
+        result.append(renderComments(comments));
+        result.append("</body>\n" +
+                "</html>");
+
+        return result.toString();
 
     }
 

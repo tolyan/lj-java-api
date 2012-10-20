@@ -9,10 +9,13 @@
         $entry.getPoster() wrote, <br>
         $entry.getDate()
     </div>
+        <span id="nav" class="navigation">
+            <a href="$prevURL">Previous Entry</a> | <a href="$nextURL">Next Entry</a>
+        </span>
     <div class="entrySubj" id="subj">
         <h1>$entry.getSubject()</h1>
     </div>
     <div class="entryBody" id="body">
-        $entry.getBody()
+        $entry.getHTMLBody()
     </div>
 </div>

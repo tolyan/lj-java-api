@@ -78,7 +78,11 @@ public class XMLRPCClientImpl implements XMLRPCClient {
 
             for (Object anArray : array) {
                 Map map = (Map) anArray;
-                BlogEntry entry = new BlogEntry(map);
+                String journal = (String)argument.get("usejournal");
+                if (journal == null) {
+                    journal = (String) argument.get("username");
+                }
+                BlogEntry entry = new BlogEntry(map, journal);
                 result.add(entry);
             }
             BlogEntry[] entries = result.toArray(new BlogEntry[result.size()]);
