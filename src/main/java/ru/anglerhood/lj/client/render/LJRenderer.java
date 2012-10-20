@@ -33,6 +33,6 @@ import java.util.List;
 */
 public interface LJRenderer {
     public String renderBlogEntry(BlogEntry entry);
-    public String renderComments(List<Comment> comments);
+    public String renderComments(BlogEntry entry, List<Comment> comments);
     public String renderFullEntry(BlogEntry entry, List<Comment> comments);
 }

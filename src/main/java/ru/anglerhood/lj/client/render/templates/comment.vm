@@ -1,5 +1,3 @@
-#set( $entryId = $child.getEntryId() )
-#set( $html = ".html")
 #set( $id = $child.getDtalkid() )
 
 <div class="commentFull" style="margin-left: $margin$px">
@@ -8,7 +6,7 @@
         <div class="commentPoster">
             $child.getPostername()
         </div>
-        <a href="$entryId$html#t$id">
+        <a href="$entryURL#t$id">
         <span class="commentDate">$child.getDate()</span>
         </a>
         <div class="commentSubj">

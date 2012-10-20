@@ -88,8 +88,9 @@ public class HTMLRenderer implements LJRenderer {
     }
 
     @Override
-    public String renderComments(List<Comment> comments) {
+    public String renderComments(BlogEntry entry, List<Comment> comments) {
         VelocityContext commentsContext = new VelocityContext();
+        commentsContext.put("entryURL", entry.getPermalink().substring(2));
         commentsContext.put("commentList", comments);
         StringWriter writer = new StringWriter();
         Template template = loadTemplate("comments.vm");
@@ -104,7 +105,7 @@ public class HTMLRenderer implements LJRenderer {
                 "        \"http://www.w3.org/TR/html4/loose.dtd\">\n" +
                 "<html>");
         result.append(renderBlogEntry(entry));
-        result.append(renderComments(comments));
+        result.append(renderComments(entry, comments));
         result.append("</body>\n" +
                 "</html>");
 
