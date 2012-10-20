@@ -1,5 +1,6 @@
 package ru.anglerhood.lj.client.sql;
 
+import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import ru.anglerhood.lj.api.xmlrpc.results.BlogEntry;
@@ -7,6 +8,8 @@ import ru.anglerhood.lj.api.xmlrpc.results.Comment;
 import ru.anglerhood.lj.client.BlogEntryWriter;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /*
@@ -41,6 +44,8 @@ public class SQLiteWriter implements BlogEntryWriter {
 
     private Connection connection;
     private String journal;
+    private QueryRunner runner = new QueryRunner();
+
     public static final String ENTRY = "entry";
 
     //TODO refactor scheme management with reflection
@@ -52,8 +57,9 @@ public class SQLiteWriter implements BlogEntryWriter {
             BlogEntry.BODY +" string," +
             BlogEntry.DATE + " datetime," +
             BlogEntry.SUBJECT + " string, " +
-            BlogEntry.REPLY_COUNT + " integer," +
-            BlogEntry.POSTER + " string" +
+            BlogEntry.REPLY_COUNT + " integer, " +
+            BlogEntry.POSTER + " string, " +
+            BlogEntry.JOURNAL + " string" +
             ")";
     public static final String COMMENT = "comment" ;
     private final static String COMMENT_SCHEME = COMMENT + " (" +
@@ -74,7 +80,7 @@ public class SQLiteWriter implements BlogEntryWriter {
 
 
     private static final String INSERT_ENTRY = "INSERT into " + ENTRY +
-                                               " values(?, ?, ?, ?, ?, ?, ?, ?);";
+                                               " values(?, ?, ?, ?, ?, ?, ?, ?, ?);";
     private static final String INSERT_COMMENT = "INSERT into " + COMMENT +
                                                " values(?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
@@ -83,6 +89,7 @@ public class SQLiteWriter implements BlogEntryWriter {
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + journal + ".db");
+            connection.setAutoCommit(false);
         } catch (ClassNotFoundException e) {
             logger.error("Could find JDBC driver for SQLite! " + e.getMessage());
         } catch (SQLException e) {
@@ -123,6 +130,7 @@ public class SQLiteWriter implements BlogEntryWriter {
             st.setString(6, entry.getSubject());
             st.setInt(7, entry.getReply_count());
             st.setString(8, entry.getPoster());
+            st.setString(9, entry.getJournal());
             st.execute();
         } catch (SQLException e) {
             logger.error("SQL Error: " + e.getMessage());
@@ -153,12 +161,55 @@ public class SQLiteWriter implements BlogEntryWriter {
     }
 
     @Override
-    public void write(List<Comment> comments) {
-        for (Comment comment : comments) {
-            write(comment);
-            write(comment.getChildren());
+    public synchronized void write(List<Comment> comments) {
+        long time = System.nanoTime();
+        List<Object[]> params = new ArrayList<Object[]>();
+        makeBatchParams(comments, params);
+        int row = 0;
+        Object [][] paramArr = new Object[params.size()][9];
+        for (Object [] param : params) {
+            paramArr[row] = param;
+            row++;
         }
+        logger.debug(String.format("Got %s queries to run", params.size()));
+        int [] result = null;
 
+        int sum = 0;
+        try {
+            result = runner.batch(connection, INSERT_COMMENT, paramArr);
+            for(int n : result) {
+                sum = sum + n;
+           }
+        } catch (SQLException e) {
+            logger.error(String.format("Could execute batch INSERT, %s", e.getMessage()));
+        }
+        logger.debug(String.format("Wrote %s INSERT queries in %s microseconds", sum, (System.nanoTime() - time)/1000L));
+    }
+
+    public void shutdown(){
+        try {
+            connection.commit();
+            connection.close();
+        } catch (SQLException e) {
+            logger.error(String.format("Couldn't commit session, %s", e.getMessage()));
+        }
+    }
+
+    private void makeBatchParams(List<Comment> comments, List<Object []> acc){
+        Object [] params = new Object[9];
+        for (Comment comment : comments) {
+            params[0] = comment.getEntryId();
+            params[1] = comment.getDtalkid();
+            params[2] = comment.getParentDtalkId();
+            params[3] = comment.getPosterid();
+            params[4] = comment.getPostername();
+            params[5] = comment.getDatePostUnix();
+            params[6] = comment.getLevel();
+            params[7] = comment.getSubject();
+            params[8] = comment.getBody();
+            acc.add(params.clone());
+            makeBatchParams(comment.getChildren(), acc);
+        }
     }
 
     private Statement createTimeoutStatetment() throws SQLException {

@@ -35,6 +35,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represent blog entry
@@ -50,6 +52,7 @@ public class BlogEntry {
     public static final String SUBJECT = "subject";
     public static final String REPLY_COUNT = "reply_count";
     public static final String POSTER = "poster";
+    public static final String JOURNAL = "journal";
 
 
     private int itemid;
@@ -60,12 +63,13 @@ public class BlogEntry {
     private String subject;
     private Integer reply_count;
     private String poster;
+    private String journal;
 
 
     //TODO: implement support for: props (metadata)
 
 
-    public BlogEntry(Map map) throws UnsupportedEncodingException, ParseException {
+    public BlogEntry(Map map, String journal) throws UnsupportedEncodingException, ParseException {
         itemid = (Integer) map.get(ITEMID);
         permalink = (String) map.get(PERMALINK);
         anum = (Integer) map.get(ANUM);
@@ -76,6 +80,7 @@ public class BlogEntry {
 //        security = SecurityType.getInstance((String) map.get("security"));
 //        allowmask = (Integer) map.get("allowmask");
         poster = Util.nullString((String) map.get(POSTER));
+        this.journal = journal;
     }
 
     /**
@@ -115,6 +120,9 @@ public class BlogEntry {
         return body;
     }
 
+    public String getHTMLBody() {
+        return Util.toHTML(body);
+    }
 
     /**
      * The time the user posted (or said they posted, rather, since users can back-date posts) the item being returned.
@@ -182,6 +190,10 @@ public class BlogEntry {
         return poster;
     }
 
+    public String getJournal() {
+        return journal;
+    }
+
     public static Integer getDItemId(int entryId, int anum) {
         return entryId * 256 + anum;
     }
@@ -194,6 +206,7 @@ public class BlogEntry {
                 ", body='" + body + '\'' +
                 ", date=" + date +
                 ", subject='" + subject + '\'' +
+                ", jouranl='" + journal + '\'' +
 //                ", security=" + security +
 //                ", allowmask=" + allowmask +
 //                ", poster='" + poster + '\'' +

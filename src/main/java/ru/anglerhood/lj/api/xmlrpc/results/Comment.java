@@ -176,6 +176,10 @@ public class Comment {
     public String getBody() {
         return body;
     }
+    public String getHTMLBody() {
+        return Util.toHTML(body);
+    }
+
 
     public String getState() {
         return state;

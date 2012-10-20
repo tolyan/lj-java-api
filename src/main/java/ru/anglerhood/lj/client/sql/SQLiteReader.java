@@ -54,6 +54,12 @@ public class SQLiteReader implements BlogEntryReader {
                                                  " where " + Comment.ENTRYID + " = ?" +
                                                  " order by level, datepostunix asc;";
 
+    private static final String SELECT_NEXT = String.format("SELECT min(%s) from %s where %s > ?;",
+                                                                    BlogEntry.ITEMID, SQLiteWriter.ENTRY, BlogEntry.ITEMID);
+    private static final String SELECT_PREV = String.format("SELECT max(%s) from %s where %s < ?;",
+                                                                    BlogEntry.ITEMID, SQLiteWriter.ENTRY, BlogEntry.ITEMID);
+
+
     public SQLiteReader(String journal) {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -149,6 +155,28 @@ public class SQLiteReader implements BlogEntryReader {
         return result;
     }
 
+    @Override
+    public BlogEntry getPreviousEntry(int entryId) {
+        return getEntryBySelect(SELECT_PREV, new EntryIdHandler(), entryId);
+    }
+
+    @Override
+    public BlogEntry getNextEntry(int entryId) {
+        return getEntryBySelect(SELECT_NEXT, new EntryIdHandler(), entryId);
+    }
+
+    private BlogEntry getEntryBySelect(String sql, ResultSetHandler<Integer> handler, int entryId){
+        BlogEntry result = null;
+        try {
+            Integer prevId =  runner.query(connection, sql, handler, entryId);
+            if (prevId != 0 && prevId != null) {
+                result = readEntry(prevId);
+            }
+        } catch (SQLException e) {
+            logger.error(String.format("SQL Error: %s", e.getMessage()));
+        }
+        return result;
+    }
 
 
     @Override
