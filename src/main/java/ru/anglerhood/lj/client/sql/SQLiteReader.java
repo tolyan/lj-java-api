@@ -107,6 +107,7 @@ public class SQLiteReader implements BlogEntryReader {
     }
 
     private List<Comment> nestComments(List<Comment> comments) {
+        if (comments.size() == 0) return comments;
         List<Comment> result = new LinkedList<Comment>();
         SortedMap<Integer, SortedSet<Comment>> levels = new TreeMap<Integer, SortedSet<Comment>>();
         //distribute comments among levels
