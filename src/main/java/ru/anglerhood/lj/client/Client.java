@@ -292,9 +292,25 @@ public class Client {
             }
         }
 
+        writeIndex(dir);
+
         logger.debug(String.format("Ended render of journal: %s", journal));
 
     }
+
+    public void writeIndex(String dir) {
+        BlogEntryReader indexReader = new SQLiteReader(journal);
+        HTMLRenderer renderer = new HTMLRenderer(journal, indexReader);
+        String output = renderer.renderIndex();
+        String filename = dir + "/index.html";
+        try {
+            logger.debug(String.format("Writing file %s: ", filename));
+            FileUtils.writeStringToFile(new File(filename), output);
+        } catch (IOException e) {
+            logger.error(String.format("Couldn't write file %s, %s", filename, e.getMessage()));
+        }
+    }
+
 
     public String getUser() {
         return user;

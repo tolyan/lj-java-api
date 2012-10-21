@@ -21,7 +21,8 @@ public class EntryPoint {
 //        client.scrapJournal();
 //
         BlogEntryReader reader = new SQLiteReader(JOURNAL_NAME);
-        client.renderJournal();
+//        client.renderJournal();
+        client.writeIndex(JOURNAL_NAME);
 
 
 //        PictureStorage storage = new PictureStorage();

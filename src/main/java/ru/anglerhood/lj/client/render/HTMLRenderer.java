@@ -106,11 +106,29 @@ public class HTMLRenderer implements LJRenderer {
                 "<html>");
         result.append(renderBlogEntry(entry));
         result.append(renderComments(entry, comments));
-        result.append("</body>\n" +
-                "</html>");
+        result.append("</body>\n").append("</html>");
 
         return result.toString();
 
+    }
+
+    public String renderIndex(){
+        StringBuilder result = new StringBuilder();
+        result.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n" +
+                "        \"http://www.w3.org/TR/html4/loose.dtd\">\n" +
+                "<html>");
+        result.append("<span class=\"index_header\">JOURNAL: ").append(journal).append("</span>");
+        while(reader.hasNext()){
+            BlogEntry entry = reader.next();
+            result.append("<br>").
+                    append("<span class=\"index_item\">").
+                    append("<a href=\"").append(entry.getPermalink().substring(2)).append("\">").
+                    append(entry.getSubject()).append("</a>").
+                    append("</span>");
+        }
+        result.append("</body>\n").append("</html>");
+
+        return result.toString();
     }
 
     private Template loadTemplate(String template) {
