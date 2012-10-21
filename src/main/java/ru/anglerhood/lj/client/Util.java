@@ -34,6 +34,12 @@ public class Util {
             end = matcher.end();
         }
         result.append(body.substring(end));
+
+        pattern = Pattern.compile("<lj comm=\"([\\w]+)\">");
+        matcher = pattern.matcher(result);
+        while(matcher.find()) {
+            result.replace(matcher.start(), matcher.end(), "<span class=\"ljcomm\">" + matcher.group(1) + "</span>");
+        }
         return result.toString();
     }
 
